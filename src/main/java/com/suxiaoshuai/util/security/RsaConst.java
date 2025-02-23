@@ -1,12 +1,14 @@
 package com.suxiaoshuai.util.security;
 
+import com.suxiaoshuai.util.charset.CharsetUtil;
+
 /**
  * @author sxs
  */
 public final class RsaConst {
 
 	/** 编码 */
-	public final static String ENCODE = "UTF-8";
+	public final static String ENCODE = CharsetUtil.UTF_8;
 
 	public final static String KEY_X509 = "X509";
 	public final static String KEY_PKCS12 = "PKCS12";

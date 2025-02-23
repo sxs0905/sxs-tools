@@ -22,7 +22,7 @@ public final class FormatUtil {
 
 	/** 判断是否为空 ,为空返回true */
 	public static boolean isEmpty(Object arg) {
-		return toStringTrim(arg).length() == 0 ? true : false;
+		return toStringTrim(arg).isEmpty();
 	}
 
 	/** ==============TO Base=================== */
@@ -50,7 +50,7 @@ public final class FormatUtil {
 	 * 使用:toLong(值,默认值[选填])
 	 */
 	public static long toLong(Object... args) {
-		Long def = 0L;
+		long def = 0L;
 		if (args != null) {
 			String str = toStringTrim(args[0]);
 			if (args.length > 1)
@@ -175,8 +175,8 @@ public final class FormatUtil {
 	public static String toMoney(Object str, String MoneyType) {
 		DecimalFormat df = new DecimalFormat(MoneyType);
 		if (isDecimal(str))
-			return df.format(toDecimal(str)).toString();
-		return df.format(toDecimal("0.00")).toString();
+			return df.format(toDecimal(str));
+		return df.format(toDecimal("0.00"));
 	}
 
 	/** 获取字符串str 左边len位数 */
@@ -198,14 +198,14 @@ public final class FormatUtil {
 		if (str.length() <= len)
 			return str;
 		else
-			return str.substring(str.length() - len, str.length());
+			return str.substring(str.length() - len);
 	}
 
 	/**
 	 * 首字母变小写
 	 */
 	public static String firstCharToLowerCase(String str) {
-		Character firstChar = str.charAt(0);
+		char firstChar = str.charAt(0);
 		String tail = str.substring(1);
 		str = Character.toLowerCase(firstChar) + tail;
 		return str;
@@ -215,7 +215,7 @@ public final class FormatUtil {
 	 * 首字母变大写
 	 */
 	public static String firstCharToUpperCase(String str) {
-		Character firstChar = str.charAt(0);
+		char firstChar = str.charAt(0);
 		String tail = str.substring(1);
 		str = Character.toUpperCase(firstChar) + tail;
 		return str;
@@ -228,22 +228,21 @@ public final class FormatUtil {
 	public static List delMoreList(List list) {
 		Set set = new HashSet();
 		List newList = new ArrayList();
-		for (Iterator iter = list.iterator(); iter.hasNext();) {
-			Object element = iter.next();
-			if (set.add(element))
-				newList.add(element);
-		}
+        for (Object element : list) {
+            if (set.add(element))
+                newList.add(element);
+        }
 		return newList;
 	}
 
 	public static String formatParams(String message, Object[] params) {
-		StringBuffer msg = new StringBuffer();
+		StringBuilder msg = new StringBuilder();
 		String temp = "";
 		for (int i = 0; i < params.length + 1; i++) {
 			int j = message.indexOf("{}") + 2;
 			if (j > 1) {
 				temp = message.substring(0, j);
-				temp = temp.replaceAll("\\{\\}", FormatUtil.toString(params[i]));
+				temp = temp.replaceAll("\\{}", FormatUtil.toString(params[i]));
 				msg.append(temp);
 				message = message.substring(j);
 			} else {

@@ -350,52 +350,6 @@ public class WaterMarkImageUtilOrigin {
 
     }
 
-    public static void main(String[] args) throws IOException {
-        String srcImgPath = "d:/1.jpg";
-        String logoText = "此 图 片 仅 供 X X X X 内 部 使 用";
-        String iconPath = "d:/2.jpg";
-
-        String targerTextPath = "d:/qie_text.jpg";
-        String targerTextPath2 = "d:/qie_text_rotate.jpg";
-
-        String targerIconPath = "d:/qie_icon.jpg";
-        String targerIconPath2 = "d:/qie_icon_rotate.jpg";
-
-        System.out.println("给图片添加水印文字开始...");
-
-//        File file = new File("C:\\Users\\Public\\Pictures\\Sample Pictures\\Desert.jpg");
-        /*File file = new File("D:\\b.jpg");
-        InputStream is = markImageByText(null, new FileInputStream(file), -30, "png");
-        aaa(is, targerTextPath);*/
-        File file = new File("D:\\b.jpg");
-        String aIconPath = Objects.requireNonNull(WaterMarkImageUtil.class.getResource("/img/waterMarkIcon.png")).getPath();
-//        String aIconPath = "D:\\水印4.png";
-        InputStream is = markImageByIcon(aIconPath, Files.newInputStream(file.toPath()), -30, null);
-        aaa(is, targerIconPath);
-
-        ImageIcon img = new ImageIcon("file:" + WaterMarkImageUtil.class.getResource("/img/waterMarkIcon.png").getPath().toString());
-        System.out.println("args = [" + WaterMarkImageUtil.class.getResourceAsStream("/img/waterMarkIcon.png") + "]");
-
-        // 给图片添加水印文字
-//        markImageByText(logoText, srcImgPath, targerTextPath);
-//        File file = new File("C:\\Users\\Public\\Pictures\\Sample Pictures\\Image 1.png");
-//        markImageByText(logoText, new FileInputStream(file));
-//        markImageByText(LOGO_TEXT, new FileInputStream(file), targerTextPath, null, "png");
-//        markImageByText(logoText, new FileInputStream(file), null, "png");
-        // 给图片添加水印文字,水印文字旋转-45
-//        markImageByText(logoText, srcImgPath, targerTextPath2, -45);
-//        System.out.println("给图片添加水印文字结束...");
-
-//        System.out.println("给图片添加水印图片开始...");
-//        setImageMarkOptions(0.3f, 1, 1, null, null);
-        // 给图片添加水印图片
-//        markImageByIcon(iconPath, srcImgPath, targerIconPath);
-        // 给图片添加水印图片,水印图片旋转-45
-//        markImageByIcon(iconPath, srcImgPath, targerIconPath2, -45);
-//        System.out.println("给图片添加水印图片结束...");
-
-    }
-
     private static FontMetrics getFontMetrics(Font font) {
         BufferedImage img = new BufferedImage(1, 1, BufferedImage.TYPE_INT_ARGB);
         Graphics g = img.getGraphics();

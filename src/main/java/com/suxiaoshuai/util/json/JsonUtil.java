@@ -7,6 +7,7 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
+import com.suxiaoshuai.util.date.DatePattern;
 import com.suxiaoshuai.util.string.StringUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -21,7 +22,6 @@ public class JsonUtil<T> {
 
     private static final Logger logger = LoggerFactory.getLogger(JsonUtil.class);
 
-
     private static final ObjectMapper objectMapper = new ObjectMapper();
     // 日起格式化
     private static final String STANDARD_FORMAT = "yyyy-MM-dd HH:mm:ss";
@@ -34,11 +34,10 @@ public class JsonUtil<T> {
         // 忽略空Bean转json的错误
         objectMapper.configure(SerializationFeature.FAIL_ON_EMPTY_BEANS, false);
         // 所有的日期格式都统一为以下的样式，即yyyy-MM-dd HH:mm:ss
-        objectMapper.setDateFormat(new SimpleDateFormat(STANDARD_FORMAT));
+        objectMapper.setDateFormat(new SimpleDateFormat(DatePattern.NORM_DATETIME_PATTERN));
         // 忽略 在json字符串中存在，但是在java对象中不存在对应属性的情况。防止错误
         objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
     }
-
 
     /**
      * 对象转Json格式字符串
@@ -99,7 +98,8 @@ public class JsonUtil<T> {
             JavaType javaType = objectMapper.getTypeFactory().constructCollectionType(collectionClass, elementClass);
             return objectMapper.readValue(json, javaType);
         } catch (Exception e) {
-            logger.error("parse json：{} --> list:{},element:{},异常", json, collectionClass.getName(), elementClass.getName(), e);
+            logger.error("parse json：{} --> list:{},element:{},异常", json, collectionClass.getName(),
+                    elementClass.getName(), e);
             return Collections.emptyList();
         }
     }
@@ -112,7 +112,8 @@ public class JsonUtil<T> {
         return toMap(json, Map.class, String.class, Object.class);
     }
 
-    public static <K, V> Map<K, V> toMap(String json, Class<? extends Map> mapClass, Class<K> keyClass, Class<V> valueClass) {
+    public static <K, V> Map<K, V> toMap(String json, Class<? extends Map> mapClass, Class<K> keyClass,
+                                         Class<V> valueClass) {
         if (StringUtil.isEmpty(json) || mapClass == null) {
             return new HashMap<>();
         }

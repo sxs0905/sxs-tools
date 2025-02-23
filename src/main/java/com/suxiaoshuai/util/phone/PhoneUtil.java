@@ -58,20 +58,4 @@ public class PhoneUtil {
         }
         return sb.toString();
     }
-
-    public static void main(String[] args) {
-//        String context = "4006061230-68110";
-//        String context = "862126137886,5873400";
-//        String context = "021-68904008、68913621";
-//        String context = "86-21-26137886-4682924";
-//        String context = "86-21-26137886-4682924";
-//        String context = "+86-13122102926;+86-13122102926";
-//        String context = "862163770307;862153029736";
-        String context = "+86-21-57240181-4682924;+86-13122102926";
-       // String context = "+86-18626405849";
-        String regexAll = REGEX_BEGIN + REGEX + REGEX_END;
-        System.out.println(regexAll);
-        System.out.println(RegexUtil.match(context, regexAll));
-        System.out.println(parse(context));
-    }
 }

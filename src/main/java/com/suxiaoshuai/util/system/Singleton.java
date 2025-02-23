@@ -10,7 +10,7 @@ import java.util.concurrent.ConcurrentHashMap;
  *
  */
 public final class Singleton {
-	private static Map<Class<?>, Object> pool = new ConcurrentHashMap<Class<?>, Object>();
+	private static final Map<Class<?>, Object> pool = new ConcurrentHashMap<Class<?>, Object>();
 	
 	private Singleton() {}
 	
@@ -19,8 +19,7 @@ public final class Singleton {
 	 * 对象存在于池中返回，否则创建，每次调用此方法获得的对象为同一个对象<br>
 	 * 
 	 * @param clazz 类
-	 * @return 单例对象
-	 */
+     */
 	@SuppressWarnings("unchecked")
 	/*public static <T> T get(Class<T> clazz, Object... params) {
 		T obj = (T) pool.get(clazz);

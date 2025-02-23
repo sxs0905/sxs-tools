@@ -6,10 +6,12 @@ import com.suxiaoshuai.exception.SxsToolsException;
 import com.suxiaoshuai.util.charset.CharsetUtil;
 import com.suxiaoshuai.util.date.DateUtil;
 import com.suxiaoshuai.util.string.StringUtil;
-import org.apache.commons.compress.utils.IOUtils;
+import org.apache.commons.io.IOUtils;
 import org.apache.tools.zip.ZipEntry;
 import org.apache.tools.zip.ZipFile;
 import org.apache.tools.zip.ZipOutputStream;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.*;
 import java.util.ArrayList;
@@ -21,6 +23,8 @@ import java.util.List;
  * Created by Han on 2017/9/14.
  */
 public class ZipUtil {
+
+    private static final Logger logger = LoggerFactory.getLogger(ZipUtil.class);
 
     private static final String ZIP_FILE = FileConstant.FILE_NAME_SEPARATOR + FileConstant.FILE_SUFFIX_ZIP;
 
@@ -48,12 +52,14 @@ public class ZipUtil {
                 targetFileDirectory.mkdirs();
             }
             File[] files = targetFileDirectory.listFiles();
-            for (File file : files) {
-                String name = file.getName();
-                name = name.substring(0, name.lastIndexOf(".") == -1 ? name.length() : name.lastIndexOf("."));
-                if (fileName.equalsIgnoreCase(name)) {
-                    fileName = fileName + "_" + DateUtil.formatDate(new Date(), DateFormConstant.YYYYMMDDHHMMSS);
-                    break;
+            if (files != null) {
+                for (File file : files) {
+                    String name = file.getName();
+                    name = name.substring(0, name.lastIndexOf(".") == -1 ? name.length() : name.lastIndexOf("."));
+                    if (fileName.equalsIgnoreCase(name)) {
+                        fileName = fileName + "_" + DateUtil.formatDate(new Date(), DateFormConstant.YYYYMMDDHHMMSS);
+                        break;
+                    }
                 }
             }
             fos = new FileOutputStream(zipPath + File.separator + fileName + ZIP_FILE);
@@ -61,13 +67,10 @@ public class ZipUtil {
             if (StringUtil.isBlank(charSet)) {
                 charSet = CharsetUtil.UTF_8;
             }
-            zos.setEncoding(charSet);//此处修改字节码方式。
+            zos.setEncoding(charSet);// 此处修改字节码方式。
             writeZip(new File(sourcePath), "", zos);
-        } catch (FileNotFoundException e) {
-// TODO 收拾收拾
-            System.out.println(e);
         } catch (Exception e) {
-
+            logger.error("zip source:{},zipPath:{},name:{} error", sourcePath, zipPath, fileName, e);
         } finally {
             try {
                 if (zos != null) {
@@ -75,36 +78,35 @@ public class ZipUtil {
                 }
             } catch (IOException e) {
             }
-
         }
     }
 
     private static void writeZip(File file, String parentPath, ZipOutputStream zos) throws IOException {
-        if (file.exists()) {
-            if (file.isDirectory()) {//处理文件夹
-                parentPath += file.getName() + File.separator;
-                File[] files = file.listFiles();
-                if (files.length != 0) {
-                    for (File f : files) {
-                        writeZip(f, parentPath, zos);
-                    }
-                } else {       //空目录则创建当前目录
-                    zos.putNextEntry(new ZipEntry(parentPath));
+        if (!file.exists()) {
+            return;
+        }
+        if (file.isDirectory()) {// 处理文件夹
+            parentPath += file.getName() + File.separator;
+            File[] files = file.listFiles();
+            // 空目录则创建当前目录
+            if (files != null) {
+                for (File f : files) {
+                    writeZip(f, parentPath, zos);
                 }
-            } else {
-                try (FileInputStream fis = new FileInputStream(file)) {
-                    ZipEntry ze = new ZipEntry(parentPath + file.getName());
-                    zos.putNextEntry(ze);
-                    byte[] content = new byte[CACHE_SIZE];
-                    int len;
-                    while ((len = fis.read(content)) != -1) {
-                        zos.write(content, 0, len);
-                        zos.flush();
-                    }
+            }
+        } else {
+            try (FileInputStream fis = new FileInputStream(file)) {
+                ZipEntry ze = new ZipEntry(parentPath + file.getName());
+                zos.putNextEntry(ze);
+                byte[] content = new byte[CACHE_SIZE];
+                int len;
+                while ((len = fis.read(content)) != -1) {
+                    zos.write(content, 0, len);
+                    zos.flush();
+                }
 
-                } catch (FileNotFoundException e) {
-                } catch (IOException e) {
-                }
+            } catch (Exception e) {
+                logger.error("write zip file error:{}", file.getAbsolutePath(), e);
             }
         }
     }

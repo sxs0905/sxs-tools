@@ -1,6 +1,8 @@
 package com.suxiaoshuai.util.security;
 
 import org.apache.commons.codec.binary.Base64;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.*;
 import java.security.*;
@@ -19,40 +21,24 @@ import java.util.Enumeration;
  */
 public final class RsaReadUtil {
 
+    private static final Logger logger = LoggerFactory.getLogger(RsaReadUtil.class);
+
     /**
      * 根据Cer文件读取公钥
-     *
-     * @param pubCerPath
-     * @return
      */
     public static PublicKey getPublicKeyFromFile(String pubCerPath) {
-        FileInputStream pubKeyStream = null;
-        try {
-            pubKeyStream = new FileInputStream(pubCerPath);
+        try (FileInputStream pubKeyStream = new FileInputStream(pubCerPath)) {
             byte[] reads = new byte[pubKeyStream.available()];
             pubKeyStream.read(reads);
             return getPublicKeyByText(new String(reads));
-        } catch (FileNotFoundException e) {
-            System.out.println("公钥证书不存在");
-        } catch (IOException e) {
+        } catch (Exception e) {
             System.out.println("公钥证书文件读取失败");
-        } finally {
-            if (pubKeyStream != null) {
-                try {
-                    pubKeyStream.close();
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-            }
         }
         return null;
     }
 
     /**
      * 根据公钥Cer文本串读取公钥
-     *
-     * @param pubKeyText
-     * @return
      */
     public static PublicKey getPublicKeyByText(String pubKeyText) {
         try {
@@ -76,38 +62,21 @@ public final class RsaReadUtil {
 
     /**
      * 根据私钥路径读取私钥
-     *
-     * @param pfxPath
-     * @param priKeyPass
-     * @return
      */
     public static PrivateKey getPrivateKeyFromFile(String pfxPath, String priKeyPass) {
-        InputStream priKeyStream = null;
-        try {
-            priKeyStream = new FileInputStream(pfxPath);
+        try (InputStream priKeyStream = new FileInputStream(pfxPath)) {
             byte[] reads = new byte[priKeyStream.available()];
             priKeyStream.read(reads);
             return getPrivateKeyByStream(reads, priKeyPass);
         } catch (Exception e) {
-            System.out.println("解析文件，读取私钥失败");
-        } finally {
-            if (priKeyStream != null) {
-                try {
-                    priKeyStream.close();
-                } catch (Exception e) {
-                    //
-                }
-            }
+            logger.error("解析文件:{}，读取私钥:{} 失败", pfxPath, priKeyPass, e);
         }
+        //
         return null;
     }
 
     /**
      * 根据PFX私钥字节流读取私钥
-     *
-     * @param pfxBytes
-     * @param priKeyPass
-     * @return
      */
     public static PrivateKey getPrivateKeyByStream(byte[] pfxBytes, String priKeyPass) {
         try {
@@ -122,15 +91,17 @@ public final class RsaReadUtil {
             return (PrivateKey) ks.getKey(keyAlias, charPriKeyPass);
         } catch (IOException e) {
             // 加密失败
-            System.out.println("解析文件，读取私钥失败:");
+            logger.error("解析文件，读取私钥失败:", e);
         } catch (KeyStoreException e) {
-            System.out.println("私钥存储异常:");
+            logger.error("私钥存储异常:", e);
         } catch (NoSuchAlgorithmException e) {
-            System.out.println("不存在的解密算法:");
+            logger.error("不存在的解密算法:", e);
         } catch (CertificateException e) {
-            System.out.println("证书异常:");
+            logger.error("证书异常:", e);
         } catch (UnrecoverableKeyException e) {
-            System.out.println("不可恢复的秘钥异常");
+            logger.error("不可恢复的秘钥异常:", e);
+        } catch (Exception e) {
+            logger.error("私钥读取异常:", e);
         }
         return null;
     }

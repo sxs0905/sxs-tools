@@ -2,6 +2,8 @@ package com.suxiaoshuai.util.date;
 
 
 import com.suxiaoshuai.util.string.StringUtil;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -9,10 +11,9 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
-/**
- * @author sxs
- */
 public class ThreadSafeDateUtil {
+
+    private static final Logger logger = LoggerFactory.getLogger(ThreadSafeDateUtil.class);
 
     /**
      * 锁对象
@@ -39,13 +40,7 @@ public class ThreadSafeDateUtil {
 //                    System.out.println("put new sdf of pattern " + pattern + " to map");
 
                     // 这里是关键,使用ThreadLocal<SimpleDateFormat>替代原来直接new SimpleDateFormat
-                    tl = new ThreadLocal<SimpleDateFormat>() {
-
-                        @Override
-                        protected SimpleDateFormat initialValue() {
-                            return new SimpleDateFormat(pattern);
-                        }
-                    };
+                    tl = ThreadLocal.withInitial(() -> new SimpleDateFormat(pattern));
                     sdfMap.put(pattern, tl);
                 }
             }
@@ -66,12 +61,15 @@ public class ThreadSafeDateUtil {
         return getSdf(pattern).format(date);
     }
 
-    public static Date parse(String dateStr, String pattern) throws ParseException {
-
-        if (StringUtil.isBlank(dateStr) || StringUtil.isBlank(pattern)) {
+    public static Date parse(String dateStr, String pattern) {
+        try {
+            if (StringUtil.isBlank(dateStr) || StringUtil.isBlank(pattern)) {
+                return null;
+            }
+            return getSdf(pattern).parse(dateStr);
+        } catch (Exception e) {
+            logger.error("date :{},pattern:{} parse error", dateStr, pattern, e);
             return null;
         }
-        return getSdf(pattern).parse(dateStr);
     }
-
 }

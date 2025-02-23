@@ -1,5 +1,9 @@
 package com.suxiaoshuai.util.file;
 
+import com.suxiaoshuai.util.ValidateUtil;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.*;
 
 /**
@@ -8,6 +12,8 @@ import java.io.*;
  * @date 2017/9/12
  */
 public class FileUtil {
+
+    private static final Logger logger = LoggerFactory.getLogger(FileUtil.class);
 
     /**
      * 保存文件到本地
@@ -66,10 +72,8 @@ public class FileUtil {
             }
             if (file.isDirectory()) {
                 File[] files = file.listFiles();
-                if (files.length > 0) {
-                    for (int i = 0; i < files.length; i++) {//遍历目录下所有的文件
-                        deleteFile(files[i]);//把每个文件用这个方法进行迭代
-                    }
+                for (File value : files) {//遍历目录下所有的文件
+                    deleteFile(value);//把每个文件用这个方法进行迭代
                 }
             }
             file.delete();

@@ -1,6 +1,5 @@
 package com.suxiaoshuai.util;
 
-
 import com.suxiaoshuai.util.string.StringUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -15,6 +14,8 @@ import java.util.regex.Pattern;
  * @author sxs
  */
 public class ValidateUtil {
+
+    private static final Logger logger = LoggerFactory.getLogger(ValidateUtil.class);
 
     private static final String REGEX_MOBILE0 = "((\\+86|0086)?\\s*)(1\\d{10}|(^\\d{3,4}-\\d{7,8}$))";
 
@@ -40,7 +41,12 @@ public class ValidateUtil {
     private static final List<Character> BASE_CODES = new ArrayList<>();
     private static final String BASE_CODE_REGEX = "[" + BASE_CODE_STRING + "]{18}";
     private static final int[] WEIGHT = {1, 3, 9, 27, 19, 26, 16, 17, 20, 29, 25, 13, 8, 24, 10, 30, 28};
-    private static final Logger log = LoggerFactory.getLogger(ValidateUtil.class);
+
+    static {
+        for (char c : BASE_CODE_ARRAY) {
+            BASE_CODES.add(c);
+        }
+    }
 
     public static boolean verify(String str, String regex) {
         if (StringUtil.isEmpty(str)) {
@@ -53,7 +59,7 @@ public class ValidateUtil {
      * 判断是否是手机号
      *
      * @param tel 手机号
-     * @return boolean true:是  false:否
+     * @return boolean true:是 false:否
      */
     public static boolean mobile(String tel) {
         return verify(tel, REGEX_MOBILE0);
@@ -62,8 +68,6 @@ public class ValidateUtil {
     /**
      * 判断是否是身份证号
      *
-     * @param idCardNo
-     * @return
      */
     public static boolean isIDNo(String idCardNo) {
         boolean matches = verify(idCardNo, REGEX_ID_NO);
@@ -91,7 +95,7 @@ public class ValidateUtil {
             int idCardMod = sum % 11;
             return idCardY[idCardMod].equalsIgnoreCase(String.valueOf(idCardLast));
         } catch (Exception e) {
-
+            logger.error("validate id card no:{} error", idCardNo, e);
             return false;
         }
     }
@@ -119,12 +123,6 @@ public class ValidateUtil {
      */
     public static boolean isTransportCertificateNo(String content) {
         return verify(content, REGEX_TRANSPORT_CERTIFICATE_NO);
-    }
-
-    static {
-        for (char c : BASE_CODE_ARRAY) {
-            BASE_CODES.add(c);
-        }
     }
 
     /**

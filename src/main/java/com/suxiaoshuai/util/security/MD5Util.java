@@ -2,12 +2,16 @@ package com.suxiaoshuai.util.security;
 
 
 import com.suxiaoshuai.util.string.StringUtil;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.nio.charset.Charset;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 
 public class MD5Util {
+
+    private static final Logger logger = LoggerFactory.getLogger(MD5Util.class);
 
     private final static String SHA_256 = "SHA-256";
     private final static String MD5 = "MD5";
@@ -27,7 +31,7 @@ public class MD5Util {
         try {
             md = MessageDigest.getInstance(MD5);
         } catch (NoSuchAlgorithmException e) {
-            e.printStackTrace();
+            logger.error("input:{},charset:{} ,MD5 error", input, charset, e);
         }
 
         char[] str = new char[0];

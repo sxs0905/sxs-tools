@@ -1,6 +1,8 @@
 package com.suxiaoshuai.util.image;
 
 import com.suxiaoshuai.exception.SxsToolsException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.imageio.ImageIO;
 import javax.swing.*;
@@ -12,6 +14,8 @@ import java.io.*;
  * @author sxs
  */
 public class WaterMarkImageUtil {
+
+    private static final Logger logger = LoggerFactory.getLogger(WaterMarkImageUtil.class);
     // 水印透明度 值越小越透明
     private static float alpha = 0.5f;
     // 水印横向位置
@@ -37,27 +41,6 @@ public class WaterMarkImageUtil {
     private final static String LOGO_TEXT = "此处放置水印内容";
 
     /**
-     * @param alpha          水印透明度
-     * @param positionWidth  水印横向位置
-     * @param positionHeight 水印纵向位置
-     * @param font           水印文字字体
-     * @param color          水印文字颜色
-     */
-    /*public static void setImageMarkOptions(float alpha, int positionWidth,
-                                           int positionHeight, Font font, Color color) {
-        if (alpha != 0.0f)
-            WaterMarkImageUtil.alpha = alpha;
-        if (positionWidth != 0)
-            WaterMarkImageUtil.positionWidth = positionWidth;
-        if (positionHeight != 0)
-            WaterMarkImageUtil.positionHeight = positionHeight;
-        if (font != null)
-            WaterMarkImageUtil.font = font;
-        if (color != null)
-            WaterMarkImageUtil.color = color;
-    }*/
-
-    /**
      * 给图片添加水印图片
      *
      * @param inputStream 源图片IO流
@@ -76,7 +59,7 @@ public class WaterMarkImageUtil {
      * @return the input stream
      * @throws IOException the io exception
      */
-    public static InputStream markImageByIcon(String iconPath, InputStream inputStream, Integer degree, String suffix) throws IOException {
+    public static InputStream markImageByIcon(String iconPath, InputStream inputStream, Integer degree, String suffix) {
         InputStream is = null;
         ByteArrayOutputStream byteArrayOutputStream = null;
         try {
@@ -94,8 +77,7 @@ public class WaterMarkImageUtil {
             // 图片高度
             int height = srcImg.getHeight(null);
 
-            BufferedImage buffImg = new BufferedImage(width,
-                    height, BufferedImage.TYPE_INT_RGB);
+            BufferedImage buffImg = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
 
             // 1、得到画笔对象
             Graphics2D g = buffImg.createGraphics();
@@ -118,8 +100,7 @@ public class WaterMarkImageUtil {
             // 5、得到Image对象。
             Image img = imgIcon.getImage();
 
-            g.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_ATOP,
-                    alpha));
+            g.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_ATOP, alpha));
 
             // 获取文字的宽高
             // 文字的高度
@@ -151,16 +132,21 @@ public class WaterMarkImageUtil {
             ImageIO.write(buffImg, "png", byteArrayOutputStream);
             is = new ByteArrayInputStream(byteArrayOutputStream.toByteArray());
 
-            System.out.println("图片完成添加水印图片");
+            logger.info("图片完成添加水印图片");
 
         } catch (Exception e) {
+            logger.error("markImageByIcon error:{}", e.getMessage(), e);
             throw new SxsToolsException(e);
         } finally {
-            if (null != byteArrayOutputStream) {
-                byteArrayOutputStream.close();
-            }
-            if (null != inputStream) {
-                inputStream.close();
+            try {
+                if (null != byteArrayOutputStream) {
+                    byteArrayOutputStream.close();
+                }
+                if (null != inputStream) {
+                    inputStream.close();
+                }
+            } catch (Exception e) {
+                logger.error("close stream error:{}", e.getMessage(), e);
             }
         }
         return is;

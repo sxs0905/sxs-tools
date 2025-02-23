@@ -1,20 +1,28 @@
 package com.suxiaoshuai.util.system;
 
+import com.suxiaoshuai.util.security.AESUtil;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 
 /**
  * 代表当前主机的信息。
+ *
  * @author sxs
  */
 public class HostInfo {
+
+
+    private static final Logger logger = LoggerFactory.getLogger(HostInfo.class);
 
     private final String HOST_NAME;
     private final String HOST_ADDRESS;
 
     public HostInfo() {
-        String hostName;
-        String hostAddress;
+        String hostName = null;
+        String hostAddress = null;
 
         try {
             InetAddress localhost = InetAddress.getLocalHost();
@@ -22,6 +30,7 @@ public class HostInfo {
             hostName = localhost.getHostName();
             hostAddress = localhost.getHostAddress();
         } catch (UnknownHostException e) {
+            logger.error("hostName:{},hostAddrerss:{},error:", hostName, hostAddress, e);
             hostName = "localhost";
             hostAddress = "127.0.0.1";
         }
@@ -63,12 +72,9 @@ public class HostInfo {
      */
     @Override
     public final String toString() {
-        StringBuilder builder = new StringBuilder();
 
-        builder.append("Host Name:    " + getName());
-        builder.append("Host Address: " + getAddress());
-
-        return builder.toString();
+        return "Host Name:    " + getName() +
+                "Host Address: " + getAddress();
     }
 
 }

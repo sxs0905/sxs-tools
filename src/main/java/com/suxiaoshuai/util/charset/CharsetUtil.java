@@ -3,6 +3,8 @@ package com.suxiaoshuai.util.charset;
 
 import com.suxiaoshuai.util.string.StringUtil;
 
+import java.nio.charset.StandardCharsets;
+
 /**
  * @author sxs
  */
@@ -10,7 +12,7 @@ public class CharsetUtil {
     /**
      * uft-8 编码集
      */
-    public static final String UTF_8 = "UTF-8";
+    public static final String UTF_8 = StandardCharsets.UTF_8.name();
     /**
      * GBK
      */

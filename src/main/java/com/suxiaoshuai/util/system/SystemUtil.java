@@ -11,7 +11,7 @@ import java.util.Properties;
  */
 public final class SystemUtil {
 
-    /***** Java运行时环境信息 *****/
+    /* Java运行时环境信息 */
     /**
      * Java 运行时环境规范名称
      */

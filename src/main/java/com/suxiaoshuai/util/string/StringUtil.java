@@ -1,5 +1,7 @@
 package com.suxiaoshuai.util.string;
 
+import com.suxiaoshuai.util.charset.CharsetUtil;
+import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.regex.Matcher;
@@ -89,11 +91,10 @@ public class StringUtil extends StringUtils {
      * 从数字+单位中获取数字 如：700 公里-->700 0005.2吨 --> 0005.2
      *
      * @param numWithUnit 原始数据 700 公里
-     * @return
      */
     public static String getNumFromNumWithUnit(String numWithUnit) {
         if (isBlank(numWithUnit)) {
-            return null;
+            return "";
         }
         numWithUnit = trimAll(numWithUnit);
         String regex = "^\\d*\\.?\\d+";
@@ -111,7 +112,6 @@ public class StringUtil extends StringUtils {
      * 从数字+单位中获取单位 如：700 公里-->公里
      *
      * @param numWithUnit 原始数据 700 公里
-     * @return
      */
     public static String getUnit(String numWithUnit) {
         if (isBlank(numWithUnit)) {
@@ -127,7 +127,15 @@ public class StringUtil extends StringUtils {
     }
 
     public static String trimAll(String str) {
-
         return str.replaceAll("\\s+", "");
+    }
+
+
+    public static String newString(byte[] data) {
+        return newString(data, CharsetUtil.UTF_8);
+    }
+
+    public static String newString(byte[] data, String encode) {
+        return org.apache.commons.codec.binary.StringUtils.newString(Base64.encodeBase64(data), encode);
     }
 }

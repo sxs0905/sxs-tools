@@ -8,9 +8,11 @@ public class XssUtil {
 
     public static final Safelist RICH_TEXT_WHITELIST = Safelist.relaxed()
             // 结构标签
-            .addTags("div", "p", "br", "hr", "pre", "blockquote", "h1", "h2", "h3", "h4", "h5", "h6", "ul", "ol", "li", "dl", "dt", "dd")
+            .addTags("div", "p", "br", "hr", "pre", "blockquote", "h1", "h2", "h3", "h4", "h5", "h6", "ul", "ol", "li",
+                    "dl", "dt", "dd")
             // 文本格式
-            .addTags("span", "b", "strong", "i", "em", "u", "s", "strike", "sub", "sup", "code", "kbd", "samp", "var", "mark",
+            .addTags("span", "b", "strong", "i", "em", "u", "s", "strike", "sub", "sup", "code", "kbd", "samp", "var",
+                    "mark",
                     "small", "abbr", "cite", "q", "time")
             // 表格支持
             .addTags("table", "thead", "tbody", "tfoot", "tr", "td", "th", "caption")
@@ -35,7 +37,7 @@ public class XssUtil {
             .preserveRelativeLinks(true) // 保留相对链接
             .addEnforcedAttribute("a", "rel", "nofollow noopener") // 自动添加安全属性
             .addEnforcedAttribute("img", "loading", "lazy") // 默认启用懒加载
-            ;
+    ;
 
     /**
      * 对输入字符串进行转义，防止 XSS 攻击
@@ -53,7 +55,6 @@ public class XssUtil {
         return process(input, mode, null);
     }
 
-
     // 基础处理逻辑（同前）
     public static String process(String input, EscapeModeEnum mode, Safelist safelist) {
         safelist = safelist == null ? RICH_TEXT_WHITELIST : safelist;
@@ -66,32 +67,6 @@ public class XssUtil {
             case JSON -> StringEscapeUtils.escapeJson(input);
             default -> stripXSS(input);
         };
-    }
-
-    // 是否可能为URL内容
-    private static boolean isPotentialUrl(String input) {
-        return input.matches("^(https?|ftp|mailto|javascript):.*|^/[^/].*");
-    }
-
-    // 是否包含HTML标签
-    private static boolean containsHtmlTags(String input) {
-        return input.matches("<([a-zA-Z][a-zA-Z0-9]*)\\b[^>]*>.*?</\\1>");
-    }
-
-    // 是否有JS语法特征
-    private static boolean hasJsSyntax(String input) {
-        return input.contains(";") ||
-                input.contains("()") ||
-                input.matches(".*\\b(function|alert|eval)\\b.*");
-    }
-
-
-    /**
-     * 多层深度净化
-     */
-    private static String deepClean(String input,Safelist safelist) {
-        String stage1 = Jsoup.clean(input, safelist);
-        return StringEscapeUtils.escapeHtml4(stage1);
     }
 
     /**
