@@ -27,6 +27,9 @@ public class ThreadSafeDateUtil {
 
     /**
      * 返回一个ThreadLocal的sdf,每个线程只会new一次sdf
+     *
+     * @param pattern 具体格式
+     * @return 返回一个时间格式化实例
      */
     private static SimpleDateFormat getSdf(final String pattern) {
         ThreadLocal<SimpleDateFormat> tl = sdfMap.get(pattern);
@@ -50,7 +53,11 @@ public class ThreadSafeDateUtil {
     }
 
     /**
-     * 是用ThreadLocal<SimpleDateFormat>来获取SimpleDateFormat,这样每个线程只会有一个SimpleDateFormat
+     * 用ThreadLocal来获取SimpleDateFormat,这样每个线程只会有一个SimpleDateFormat
+     *
+     * @param date    时间
+     * @param pattern 格式
+     * @return 格式化后数据
      */
     public static String format(Date date, String pattern) {
 
@@ -61,6 +68,13 @@ public class ThreadSafeDateUtil {
         return getSdf(pattern).format(date);
     }
 
+    /**
+     * 解析时间
+     *
+     * @param dateStr 字符化时间
+     * @param pattern 解析格式
+     * @return 解析结果
+     */
     public static Date parse(String dateStr, String pattern) {
         try {
             if (StringUtil.isBlank(dateStr) || StringUtil.isBlank(pattern)) {

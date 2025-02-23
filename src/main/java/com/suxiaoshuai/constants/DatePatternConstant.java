@@ -1,8 +1,8 @@
-package com.suxiaoshuai.util.date;
+package com.suxiaoshuai.constants;
 
 import java.util.regex.Pattern;
 
-public class DatePattern {
+public class DatePatternConstant {
 
     /**
      * 标准日期时间正则，每个字段支持单个数字或2个数字，包括：

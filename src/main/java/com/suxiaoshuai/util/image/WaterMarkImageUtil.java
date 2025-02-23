@@ -57,7 +57,6 @@ public class WaterMarkImageUtil {
      * @param degree      水印图片旋转角度
      * @param suffix      the suffix
      * @return the input stream
-     * @throws IOException the io exception
      */
     public static InputStream markImageByIcon(String iconPath, InputStream inputStream, Integer degree, String suffix) {
         InputStream is = null;

@@ -15,8 +15,8 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class AmountUtil {
-    private static final Logger logger = LoggerFactory.getLogger(AmountUtil.class);
 
+    private static final Logger logger = LoggerFactory.getLogger(AmountUtil.class);
 
     /**
      * 数字大写
@@ -92,6 +92,9 @@ public class AmountUtil {
      * 金额转中文大写
      * 金额支持小数点后两位
      * 默认带整，不带零角
+     *
+     * @param amount 待转换金额
+     * @return 大写金额
      */
     public static String toUpper(BigDecimal amount) {
         return toUpper(amount, true, false);
@@ -102,6 +105,10 @@ public class AmountUtil {
      * 金额支持小数点后两位
      * 只有元不需要整
      * 是否带零角  1.01 --> 壹元零角壹分/壹元壹分
+     *
+     * @param amount       待转换金额
+     * @param withZeroJiao 是否带零角
+     * @return 大写金额
      */
     public static String toUpperNoEven(BigDecimal amount, Boolean withZeroJiao) {
         return toUpper(amount, false, withZeroJiao);
@@ -112,11 +119,21 @@ public class AmountUtil {
      * 金额支持小数点后两位
      * 只有元需要整
      * 是否带零角  1.01 --> 壹元零角壹分/壹元壹分
+     *
+     * @param amount       待转换金额
+     * @param withZeroJiao 是否带零角
+     * @return 大写金额
      */
     public static String toUpperWithEven(BigDecimal amount, Boolean withZeroJiao) {
         return toUpper(amount, true, withZeroJiao);
     }
 
+    /**
+     * 大写金额转小写
+     *
+     * @param upperCaseAmount 大写金额
+     * @return 小写金额
+     */
     public static BigDecimal toLower(String upperCaseAmount) {
         logger.info("amount toLower: {}", upperCaseAmount);
         try {

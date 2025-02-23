@@ -15,7 +15,6 @@ import java.util.Set;
  * properties文件工具类
  *
  * @author sxs
- * @date 2017/4/7
  */
 public class PropertiesUtil {
 

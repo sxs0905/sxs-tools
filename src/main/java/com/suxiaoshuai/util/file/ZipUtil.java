@@ -1,6 +1,6 @@
 package com.suxiaoshuai.util.file;
 
-import com.suxiaoshuai.constants.DateFormConstant;
+import com.suxiaoshuai.constants.DatePatternConstant;
 import com.suxiaoshuai.constants.FileConstant;
 import com.suxiaoshuai.exception.SxsToolsException;
 import com.suxiaoshuai.util.charset.CharsetUtil;
@@ -35,6 +35,11 @@ public class ZipUtil {
 
     /**
      * 将存放在sourceFilePath目录下的源文件，打包成fileName名称的zip文件，并存放到zipFilePath路径下
+     *
+     * @param sourcePath 源文件
+     * @param zipPath    压缩文件保存路径
+     * @param fileName   压缩文件名
+     * @param charSet    编码
      */
     public static void zip(String sourcePath, String zipPath, String fileName, String charSet) {
         FileOutputStream fos = null;
@@ -46,7 +51,7 @@ public class ZipUtil {
             if (zipPath.contains(sourcePath)) {
                 throw new SxsToolsException("生成的zip文件路径在待压缩文件目录下,无法完成压缩操作");
             }
-            fileName = StringUtil.isBlank(fileName) ? DateUtil.formatDate(new Date(), DateFormConstant.YYYYMMDDHHMMSS) : fileName;
+            fileName = StringUtil.isBlank(fileName) ? DateUtil.formatDate(new Date(), DatePatternConstant.PURE_DATETIME_PATTERN) : fileName;
             File targetFileDirectory = new File(zipPath);
             if (!targetFileDirectory.exists()) {
                 targetFileDirectory.mkdirs();
@@ -57,7 +62,7 @@ public class ZipUtil {
                     String name = file.getName();
                     name = name.substring(0, name.lastIndexOf(".") == -1 ? name.length() : name.lastIndexOf("."));
                     if (fileName.equalsIgnoreCase(name)) {
-                        fileName = fileName + "_" + DateUtil.formatDate(new Date(), DateFormConstant.YYYYMMDDHHMMSS);
+                        fileName = fileName + "_" + DateUtil.formatDate(new Date(), DatePatternConstant.PURE_DATETIME_PATTERN);
                         break;
                     }
                 }
@@ -77,6 +82,7 @@ public class ZipUtil {
                     zos.close();
                 }
             } catch (IOException e) {
+                logger.error("close zos error", e);
             }
         }
     }
@@ -113,6 +119,11 @@ public class ZipUtil {
 
     /**
      * 解压zip文件
+     *
+     * @param zipFilePath    待解压文件
+     * @param targetFilePath 解压目录
+     * @param charset        编码
+     * @return 具体解压后的文件
      */
     public static List<File> unzip(File zipFilePath, String targetFilePath, String charset) throws Exception {
         if (zipFilePath == null || !zipFilePath.exists()) {

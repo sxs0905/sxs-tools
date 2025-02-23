@@ -7,9 +7,7 @@ import org.slf4j.LoggerFactory;
 import java.io.*;
 
 /**
- *
  * @author sxs
- * @date 2017/9/12
  */
 public class FileUtil {
 
@@ -20,14 +18,13 @@ public class FileUtil {
      *
      * @param saveFilePath 文件本地保存路径
      * @param inputStream  输入流获取要保存的文件
-     * @throws IOException
      */
     public static void saveFileToLocalPath(String saveFilePath, InputStream inputStream) throws IOException {
         BufferedInputStream bufferedInputStream = null;
         OutputStream fileOutputStream = null;
         try {
             //*****************************************
-            //创建文件
+            // 创建文件
             File file = new File(saveFilePath);
             if (!file.exists()) {
                 if (!file.getParentFile().exists()) {
@@ -72,12 +69,13 @@ public class FileUtil {
             }
             if (file.isDirectory()) {
                 File[] files = file.listFiles();
-                for (File value : files) {//遍历目录下所有的文件
-                    deleteFile(value);//把每个文件用这个方法进行迭代
+                for (File value : files) {// 遍历目录下所有的文件
+                    deleteFile(value);// 把每个文件用这个方法进行迭代
                 }
             }
             file.delete();
         } catch (Exception e) {
+            logger.error("delete file error", e);
         }
     }
 }

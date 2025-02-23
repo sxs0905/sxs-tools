@@ -34,6 +34,7 @@ public class CharsetUtil {
      * @param source        待转换的数据
      * @param originCharset 原始编码
      * @param targetCharset 目标编码
+     * @return 输出转换后的数据
      */
     public static String dataCharsetConvert(String source, String originCharset, String targetCharset) {
         try {

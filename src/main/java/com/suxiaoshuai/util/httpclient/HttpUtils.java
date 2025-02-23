@@ -42,14 +42,35 @@ public class HttpUtils {
         }
     }
 
+    /**
+     * 发起get请求
+     *
+     * @param url 请求地址
+     * @return 请求结果
+     */
     public static String get(String url) {
         return get(url, null, null);
     }
 
+    /**
+     * 发起get请求
+     *
+     * @param url       请求地址
+     * @param headerMap 请求头
+     * @return 请求结果
+     */
     public static String get(String url, Map<String, String> headerMap) {
         return get(url, null, headerMap);
     }
 
+    /**
+     * 发起get 请求
+     *
+     * @param url       请求地址
+     * @param paramMap  请求参数
+     * @param headerMap 请求头
+     * @return 请求结果
+     */
     public static String get(String url, Map<String, String> paramMap, Map<String, String> headerMap) {
         logger.info("okhttp get url:{}, paramMap:{}, headerMap:{}", url, paramMap, headerMap);
         String result = null;
@@ -67,10 +88,25 @@ public class HttpUtils {
         return result;
     }
 
+    /**
+     * 发起post请求
+     *
+     * @param url  请求地址
+     * @param json 请求参数
+     * @return 请求结果
+     */
     public static String post(String url, String json) {
         return post(url, json, null);
     }
 
+    /**
+     * 发起post请求，支持自定义请求头
+     *
+     * @param url       请求地址
+     * @param json      请求参数
+     * @param headerMap 请求头
+     * @return 请求结果
+     */
     public static String post(String url, String json, Map<String, String> headerMap) {
         logger.info("okhttp post json url:{}, body:{}, headerMap:{}", url, json, headerMap);
         String result = null;
@@ -86,10 +122,25 @@ public class HttpUtils {
         return result;
     }
 
+    /**
+     * 发起post form请求
+     *
+     * @param url       请求地址
+     * @param paramsMap 请求参数
+     * @return 请求结果
+     */
     public static String postForm(String url, Map<String, String> paramsMap) {
         return postForm(url, paramsMap, null);
     }
 
+    /**
+     * 发起post form请求，支持自定义请求头
+     *
+     * @param url       请求地址
+     * @param paramsMap 参数
+     * @param headerMap 请求头
+     * @return 请求结果
+     */
     public static String postForm(String url, Map<String, String> paramsMap, Map<String, String> headerMap) {
         logger.info("okhttp post form url:{}, body:{}, headerMap:{}", url, paramsMap, headerMap);
         String result = null;

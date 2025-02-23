@@ -43,6 +43,7 @@ public class AESUtil {
      * 生成随机盐值（Base64编码）
      *
      * @param byteLength 盐值字节长度（推荐>=16）
+     * @return salt
      */
     public static String generateSalt(int byteLength) {
         byte[] salt = new byte[byteLength];
@@ -50,15 +51,23 @@ public class AESUtil {
         return Base64Util.encode(salt);
     }
 
-    // 生成AES密钥（128/192/256位）
+    /**
+     * @return 返回128位密钥
+     */
     public static String key128() {
         return generator(128);
     }
 
+    /**
+     * @return 返回192位密钥
+     */
     public static String key192() {
         return generator(192);
     }
 
+    /**
+     * @return 返回256位密钥
+     */
     public static String key256() {
         return generator(256);
     }
@@ -67,6 +76,7 @@ public class AESUtil {
      * 生成AES密钥（Base64编码格式）
      *
      * @param keySize 密钥长度（128/192/256）
+     * @return 返回具体密钥
      */
     private static String generator(int keySize) {
         try {
@@ -88,6 +98,7 @@ public class AESUtil {
      * @param saltBase64 Base64编码的盐值
      * @param iterations 迭代次数
      * @param keyLength  密钥长度（128/192/256）
+     * @return 派生密钥
      */
     public static String driveKey(String baseKey, String saltBase64, Integer iterations, AesKeyLengthEnum keyLength) {
         try {
@@ -108,6 +119,10 @@ public class AESUtil {
 
     /**
      * GCM模式加密
+     *
+     * @param content   明文
+     * @param base64Key 加密密钥
+     * @return 加密后密文
      */
     public static String encrypt(String content, String base64Key) {
         return encrypt(content, base64Key, null, DEFAULT_ITERATIONS, AesKeyLengthEnum.L_256);

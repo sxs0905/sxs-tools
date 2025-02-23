@@ -1,7 +1,7 @@
 package com.suxiaoshuai.util.date;
 
 
-import com.suxiaoshuai.constants.DateFormConstant;
+import com.suxiaoshuai.constants.DatePatternConstant;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -30,18 +30,36 @@ public class DateUtil {
     public static final int DAY_OF_SECONDS = HOUR_OF_SECONDS * 24;
 
 
-    public static final String DEFAULT_FORMAT = DatePattern.NORM_DATETIME_PATTERN;
-    public static final String DEFAULT_YMD = DatePattern.NORM_DATE_PATTERN;
+    public static final String DEFAULT_FORMAT = DatePatternConstant.NORM_DATETIME_PATTERN;
+    public static final String DEFAULT_YMD = DatePatternConstant.NORM_DATE_PATTERN;
 
+    /**
+     * 按照指定格式格式化日期
+     *
+     * @param date   日期
+     * @param format 格式
+     * @return 格式化之后时间串
+     */
     public static String formatDate(Date date, String format) {
         return ThreadSafeDateUtil.format(date, format);
     }
 
+    /**
+     * 按照指定格式解析时间
+     *
+     * @param date   字符串格式日期
+     * @param format 格式
+     * @return 解析后的日期
+     */
     public static Date parseDate(String date, String format) {
         return ThreadSafeDateUtil.parse(date, format);
     }
 
-    // 获得本月第一天0点时间
+    /**
+     * 获得本月第一天0点时间
+     *
+     * @return 返回时间
+     */
     public static Date getCurrentMouthOfFirstDayBegin() {
         Calendar cal = Calendar.getInstance();
         cal.set(cal.get(Calendar.YEAR), cal.get(Calendar.MONTH), cal.get(Calendar.DAY_OF_MONTH), 0, 0, 0);
@@ -49,7 +67,11 @@ public class DateUtil {
         return cal.getTime();
     }
 
-    // 获得本月最后一天24点时间
+    /**
+     * 获得本月最后一天24点时间
+     *
+     * @return 返回具体时间
+     */
     public static Date getCurrentMouthOfLastDayEnd() {
         Calendar cal = Calendar.getInstance();
         cal.set(cal.get(Calendar.YEAR), cal.get(Calendar.MONTH), cal.get(Calendar.DAY_OF_MONTH), 0, 59, 59);
@@ -63,6 +85,7 @@ public class DateUtil {
      *
      * @param date 指定日期
      * @param days 间隔天数,指定日期之前使用负数,之后的使用正数
+     * @return 返回具体时间
      */
     public static Date getDayBeginTime(Date date, int days) {
         Calendar c = Calendar.getInstance();
@@ -79,6 +102,7 @@ public class DateUtil {
      *
      * @param date 指定日期
      * @param days 间隔天数,指定日期之前使用负数,之后的使用正数
+     * @return 返回具体时间
      */
     public static Date getDayOfEndTime(Date date, int days) {
         Calendar c = Calendar.getInstance();
@@ -92,6 +116,9 @@ public class DateUtil {
 
     /**
      * 判断传入的时间是否为周末
+     *
+     * @param date 日期
+     * @return 返回结果
      */
     public static boolean isWeekend(Date date) {
         Calendar c = Calendar.getInstance();
@@ -103,6 +130,10 @@ public class DateUtil {
 
     /**
      * 计算两个时间之间相隔的天数
+     *
+     * @param before 第一个日期
+     * @param after  第二个日期
+     * @return 返回结果
      */
     public static Long betweenDays(Date before, Date after) {
         if (before == null || after == null) {
@@ -118,13 +149,26 @@ public class DateUtil {
      * @return the time stamp
      */
     public static String getTimeStamp() {
-        return ThreadSafeDateUtil.format(new Date(), DateFormConstant.YYYYMMDDHHMMSS);
+        return ThreadSafeDateUtil.format(new Date(), DatePatternConstant.PURE_DATETIME_PATTERN);
     }
 
+    /**
+     * 当日 yyyy-MM-dd 格式时间串
+     *
+     * @return 返回结果
+     */
     public static String today() {
         return formatDate(new Date(), DEFAULT_YMD);
     }
 
+    /**
+     * 判断日期是否在一个时间段里
+     *
+     * @param date  待判断时间
+     * @param start 开始时间（包含）
+     * @param end   结束时间（包含）
+     * @return 返回结果
+     */
     public static boolean isIn(Date date, Date start, Date end) {
         if (date == null || start == null || end == null) {
             return false;
