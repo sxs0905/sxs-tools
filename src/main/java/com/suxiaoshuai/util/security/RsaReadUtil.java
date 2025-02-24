@@ -32,7 +32,7 @@ public final class RsaReadUtil {
             pubKeyStream.read(reads);
             return getPublicKeyByText(new String(reads));
         } catch (Exception e) {
-            System.out.println("公钥证书文件读取失败");
+            logger.error("公钥证书文件:{}读取失败", pubCerPath, e);
         }
         return null;
     }
@@ -55,7 +55,7 @@ public final class RsaReadUtil {
                     keyBuffer.toString())));
             return certificate.getPublicKey();
         } catch (Exception e) {
-            System.out.println("解析公钥内容失败");
+            logger.error("解析公钥内容:{}失败", pubKeyText, e);
         }
         return null;
     }
@@ -71,7 +71,6 @@ public final class RsaReadUtil {
         } catch (Exception e) {
             logger.error("解析文件:{}，读取私钥:{} 失败", pfxPath, priKeyPass, e);
         }
-        //
         return null;
     }
 

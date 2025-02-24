@@ -37,7 +37,7 @@ public class XssUtil {
             .preserveRelativeLinks(true) // 保留相对链接
             .addEnforcedAttribute("a", "rel", "nofollow noopener") // 自动添加安全属性
             .addEnforcedAttribute("img", "loading", "lazy") // 默认启用懒加载
-    ;
+            ;
 
     /**
      * 对输入字符串进行转义，防止 XSS 攻击
@@ -77,10 +77,5 @@ public class XssUtil {
             return value;
         }
         return value.replaceAll("<", "").replaceAll(">", "");
-    }
-
-    public static void main(String[] args) {
-        String srt = "<script>alert(1)</script>";
-        System.out.println(escape(srt));
     }
 }

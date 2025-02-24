@@ -138,4 +138,15 @@ public class StringUtil extends StringUtils {
     public static String newString(byte[] data, String encode) {
         return org.apache.commons.codec.binary.StringUtils.newString(Base64.encodeBase64(data), encode);
     }
+
+
+    /**
+     * 生成与原字符串长度相同的占位字符串
+     *
+     * @param original    原字符串
+     * @param placeholder 占位字符（必须是单个字符）
+     */
+    public static String generatePlaceholder(String original, char placeholder) {
+        return isBlank(original) ? null : String.valueOf(placeholder).repeat(original.length());
+    }
 }

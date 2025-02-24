@@ -17,6 +17,10 @@ import java.nio.charset.StandardCharsets;
 import java.security.SecureRandom;
 import java.security.spec.KeySpec;
 
+/**
+ * AES 工具类
+ * 默认GCM模式
+ */
 public class AESUtil {
     private static final Logger logger = LoggerFactory.getLogger(AESUtil.class);
 
@@ -24,7 +28,6 @@ public class AESUtil {
     private static final String DERIVATION_ALGORITHM = "PBKDF2WithHmacSHA256";
 
     private static final int DEFAULT_ITERATIONS = 65536;     // PBKDF2 迭代次数
-    private static final int DEFAULT_KEY_LENGTH = 256;       // 派生密钥长度（位）
 
     private static final String DEFAULT_CIPHER_ALGORITHM = "AES/GCM/NoPadding"; // 默认使用GCM模式
     private static final int GCM_TAG_LENGTH = 128; // GCM模式校验位长度
@@ -119,9 +122,11 @@ public class AESUtil {
 
     /**
      * GCM模式加密
+     * 迭代次数：65536
+     * 密钥长度：256
      *
      * @param content   明文
-     * @param base64Key 加密密钥
+     * @param base64Key 密钥
      * @return 加密后密文
      */
     public static String encrypt(String content, String base64Key) {
@@ -131,6 +136,13 @@ public class AESUtil {
 
     /**
      * GCM模式加密
+     * 迭代次数：65536
+     * 密钥长度：256
+     *
+     * @param content    原文
+     * @param base64Key  秘钥
+     * @param saltBase64 加密盐
+     * @return 密文
      */
     public static String encrypt(String content, String base64Key, String saltBase64) {
         return encrypt(content, base64Key, saltBase64, DEFAULT_ITERATIONS, AesKeyLengthEnum.L_256);
@@ -138,6 +150,13 @@ public class AESUtil {
 
     /**
      * GCM模式加密
+     *
+     * @param content    原文
+     * @param baseKey    秘钥
+     * @param saltBase64 加密盐
+     * @param iterations 遍历次数 最多65536
+     * @param keyLength  秘钥长度
+     * @return 密文
      */
     public static String encrypt(String content, String baseKey, String saltBase64, Integer iterations, AesKeyLengthEnum keyLength) {
         try {
@@ -168,6 +187,12 @@ public class AESUtil {
 
     /**
      * GCM模式解密
+     * 迭代次数：65536
+     * 密钥长度：256
+     *
+     * @param content   密文
+     * @param base64Key 秘钥
+     * @return 明文
      */
     public static String decrypt(String content, String base64Key) {
         return decrypt(content, base64Key, null, DEFAULT_ITERATIONS, AesKeyLengthEnum.L_256);
@@ -175,13 +200,27 @@ public class AESUtil {
 
     /**
      * GCM模式解密
+     * 迭代次数：65536
+     * 密钥长度：256
+     *
+     * @param content    密文
+     * @param base64Key  秘钥
+     * @param saltBase64 盐
+     * @return 明文
      */
     public static String decrypt(String content, String base64Key, String saltBase64) {
         return decrypt(content, base64Key, saltBase64, DEFAULT_ITERATIONS, AesKeyLengthEnum.L_256);
     }
 
     /**
-     * 解密（使用默认参数）
+     * GCM模式解密
+     *
+     * @param content    密文
+     * @param base64Key  秘钥
+     * @param saltBase64 盐
+     * @param iterations 迭代次数
+     * @param keyLength  秘钥长度
+     * @return 解密后明文
      */
     public static String decrypt(String content, String base64Key, String saltBase64, Integer iterations, AesKeyLengthEnum keyLength) {
         try {
@@ -210,14 +249,12 @@ public class AESUtil {
         }
     }
 
-    // 从 Base64 字符串恢复 SecretKey
-    public static SecretKey stringToKey(String keyStr) {
-        byte[] keyBytes = Base64Util.decode(keyStr);
-        return new SecretKeySpec(keyBytes, ALGORITHM);
-    }
-
-    /***
-     * 加密
+    /**
+     * 加密CBC模式
+     *
+     * @param data      明文
+     * @param base64Key 秘钥
+     * @return 密文
      */
     public static String encryptCbc(String data, String base64Key) {
         try {
@@ -227,7 +264,7 @@ public class AESUtil {
             byte[] iv = new byte[16];
             secureRandom.nextBytes(iv);
 
-            Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
+            Cipher cipher = Cipher.getInstance(CBC);
             cipher.init(Cipher.ENCRYPT_MODE, keySpec, new IvParameterSpec(iv));
 
             byte[] encrypted = cipher.doFinal(data.getBytes(StandardCharsets.UTF_8));
@@ -246,7 +283,11 @@ public class AESUtil {
     }
 
     /**
-     * 解密
+     * 解密 CBC模式
+     *
+     * @param data      密文
+     * @param base64Key 秘钥
+     * @return 解密后数据
      */
     public static String decryptCbc(String data, String base64Key) {
         try {
@@ -272,7 +313,11 @@ public class AESUtil {
     }
 
     /**
-     * 将传入的明文转换为密文
+     * 加密 ECB模式
+     *
+     * @param str 明文
+     * @param key 秘钥
+     * @return 密文
      */
     public static String encryptEcb(String str, String key) {
         try {
@@ -301,7 +346,11 @@ public class AESUtil {
     }
 
     /**
-     * 将传入的密文转换为明文
+     * 解密 ECB模式
+     *
+     * @param str 密文
+     * @param key 秘钥
+     * @return 解密后数据
      */
     public static String decryptEcb(String str, String key) {
         try {
@@ -357,11 +406,5 @@ public class AESUtil {
             result[i] = (byte) (high * 16 + low);
         }
         return result;
-    }
-
-    public static void main(String[] args) {
-        String generator = "JFPtXJ26tvmkqtkBJkz0St+Lpbf3XqZeTSOdNKMfVUk=";
-        String encrypt = "6nURf9sL+JsD53Jpv3E7Rj8VEZbeTatQ40vKKg8NmpTOXuijnQpJ5tqwptYmpmXdgA==";
-        System.out.println(decrypt(encrypt, generator, "111", 12, AesKeyLengthEnum.L_256));
     }
 }

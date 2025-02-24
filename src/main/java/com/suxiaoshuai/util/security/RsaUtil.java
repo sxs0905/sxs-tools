@@ -59,6 +59,7 @@ public class RsaUtil {
 
     /**
      * 生成公钥和私钥
+     * 默认长度：1024
      */
     public static Pair<RSAPublicKey, RSAPrivateKey> getKeys() {
         try {
@@ -133,12 +134,12 @@ public class RsaUtil {
     /**
      * 根据私钥文件加密
      *
-     * @param pfxPath    私钥证书路径
-     * @param priKeyPass 证书密码
+     * @param pfxPath 私钥证书路径
+     * @param pwd     证书密码
      */
-    public static String encryptByPriPfxFile(String src, String pfxPath, String priKeyPass) {
+    public static String encryptByPriPfxFile(String src, String pfxPath, String pwd) {
 
-        PrivateKey privateKey = getPrivateKeyByFile(pfxPath, priKeyPass);
+        PrivateKey privateKey = getPrivateKeyByFile(pfxPath, pwd);
         if (privateKey == null) {
             return null;
         }
@@ -148,7 +149,7 @@ public class RsaUtil {
     /**
      * 根据私钥文件流加密pfx私钥文件
      *
-     * @param src        带加密原文
+     * @param src        待加密原文
      * @param pfxBytes   文件流
      * @param priKeyPass 私钥文件密码
      */

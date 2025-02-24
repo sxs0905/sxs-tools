@@ -18,6 +18,12 @@ public class PhoneUtil {
 
     public static final String REGEX = "(\\+?86-?)?((" + REGEX_400 + ")|(" + REGEX_MOBILE_PHONE + ")|(" + REGEX_FIXED_PHONE + "))(;(\\+?86-?)?((" + REGEX_400 + ")|(" + REGEX_MOBILE_PHONE + ")|(" + REGEX_FIXED_PHONE + ")))?";
 
+    /**
+     * 解析手机号
+     *
+     * @param tel 手机号
+     * @return 手机号
+     */
     public static String parse(String tel) {
 
         if (StringUtil.isBlank(tel)) {
