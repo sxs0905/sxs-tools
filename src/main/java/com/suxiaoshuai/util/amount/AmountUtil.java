@@ -367,6 +367,8 @@ public class AmountUtil {
         Pattern pattern = Pattern.compile("[拾佰仟元]");
         Matcher matcher = pattern.matcher(part);
         int index = 0;
+        int lastMatchEnd = 0;
+
         while (matcher.find()) {
             String digitString = part.substring(index, matcher.start());
             temp = new BigDecimal(String.valueOf(handleDigit(digitString)));
@@ -381,6 +383,15 @@ public class AmountUtil {
             }
 
             index = matcher.end();
+            lastMatchEnd = index;
+        }
+
+        // 处理末尾没有单位的数字
+        if (lastMatchEnd < part.length()) {
+            String remainingDigits = part.substring(lastMatchEnd);
+            if (StringUtil.isNotBlank(remainingDigits)) {
+                result = result.add(new BigDecimal(String.valueOf(handleDigit(remainingDigits))));
+            }
         }
         return Pair.of(index, result);
     }

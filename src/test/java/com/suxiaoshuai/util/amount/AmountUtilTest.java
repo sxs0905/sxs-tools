@@ -22,7 +22,7 @@ class AmountUtilTest {
 
     @Test
     void toLower() {
-        String amount = "玖亿亿玖仟玖佰玖拾玖万亿玖仟玖佰玖拾玖亿玖仟玖佰玖拾玖万玖仟玖佰玖拾玖元玖角玖分";
+        String amount = "玖";
         BigDecimal lower = AmountUtil.toLower(amount);
         System.out.println(lower);
     }
