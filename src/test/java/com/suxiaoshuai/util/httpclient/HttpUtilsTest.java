@@ -2,8 +2,6 @@ package com.suxiaoshuai.util.httpclient;
 
 import org.junit.jupiter.api.Test;
 
-import static org.junit.jupiter.api.Assertions.*;
-
 class HttpUtilsTest {
 
     @Test
