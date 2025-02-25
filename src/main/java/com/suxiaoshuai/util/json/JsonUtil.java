@@ -27,8 +27,6 @@ public class JsonUtil<T> {
     private static final Logger logger = LoggerFactory.getLogger(JsonUtil.class);
 
     private static final ObjectMapper objectMapper = new ObjectMapper();
-    // 日起格式化
-    private static final String STANDARD_FORMAT = "yyyy-MM-dd HH:mm:ss";
 
     static {
         // 对象的所有字段全部列入
@@ -46,8 +44,9 @@ public class JsonUtil<T> {
     /**
      * 对象转Json格式字符串
      *
-     * @param obj 实例
-     * @return 格式化结果
+     * @param <T>  对象类型
+     * @param obj  需要转换的对象实例
+     * @return     JSON格式字符串，如果转换失败则返回null
      */
     public static <T> String toJson(T obj) {
         if (obj == null) {
@@ -64,9 +63,10 @@ public class JsonUtil<T> {
     /**
      * 字符串转换为自定义对象
      *
-     * @param str   要转换的字符串
-     * @param clazz 自定义对象的class对象
-     * @return 解析后结果
+     * @param <T>   目标对象类型
+     * @param str   要转换的JSON字符串
+     * @param clazz 目标类的Class对象
+     * @return      转换后的对象实例，如果转换失败则返回null
      */
     public static <T> T parse(String str, Class<T> clazz) {
         if (StringUtil.isEmpty(str) || clazz == null) {
@@ -81,11 +81,12 @@ public class JsonUtil<T> {
     }
 
     /**
-     * 方法从给定的JSON内容字符串反序列化JSON内容
+     * 从给定的JSON字符串反序列化为指定类型的对象
      *
-     * @param str           json数据
-     * @param typeReference typeReference
-     * @return 解析后结果
+     * @param <T>           目标对象类型
+     * @param str           JSON字符串
+     * @param typeReference 类型引用对象，用于处理泛型类型
+     * @return             转换后的对象实例，如果转换失败则返回null
      */
     public static <T> T parse(String str, TypeReference<T> typeReference) {
         if (StringUtil.isEmpty(str) || typeReference == null) {
@@ -100,23 +101,25 @@ public class JsonUtil<T> {
     }
 
     /**
-     * 解析json串为list
+     * 解析JSON字符串为List集合
      *
-     * @param json         json数据
-     * @param elementClass 集合元素类型
-     * @return 集合
+     * @param <T>          集合元素类型
+     * @param json         JSON字符串
+     * @param elementClass 集合元素的Class对象
+     * @return            解析后的List集合，如果解析失败则返回空列表
      */
     public static <T> List<T> toList(String json, Class<T> elementClass) {
         return toList(json, List.class, elementClass);
     }
 
     /**
-     * 解析json串为集合
+     * 解析JSON字符串为指定类型的集合
      *
-     * @param json            json数据
-     * @param collectionClass 集合类型
-     * @param elementClass    元素类型
-     * @return 集合数据
+     * @param <T>             集合元素类型
+     * @param json            JSON字符串
+     * @param collectionClass 集合类的Class对象
+     * @param elementClass    集合元素的Class对象
+     * @return               解析后的List集合，如果解析失败则返回空列表
      */
     public static <T> List<T> toList(String json, Class<? extends List> collectionClass, Class<T> elementClass) {
         if (StringUtil.isEmpty(json) || elementClass == null) {
@@ -133,38 +136,38 @@ public class JsonUtil<T> {
     }
 
     /**
-     * 解析json数据为Map<Object,Object>
+     * 解析JSON字符串为Map&lt;Object,Object&gt;
      *
-     * @param json json数据
-     * @return map
+     * @param json JSON字符串
+     * @return    解析后的Map对象，如果解析失败则返回空Map
      */
     public static Map<Object, Object> toMap(String json) {
         return toMap(json, Map.class, null, null);
     }
 
     /**
-     * 解析json数据为Map<String,Object>
+     * 解析JSON字符串为Map&lt;String,Object&gt;
      *
-     * @param json json数据
-     * @return map
+     * @param json JSON字符串
+     * @return    解析后的Map对象，如果解析失败则返回空Map
      */
     public static Map<String, Object> toStrKeyMap(String json) {
         return toMap(json, Map.class, String.class, Object.class);
     }
 
     /**
-     * 解析json数据为Map指定类型
+     * 解析JSON字符串为指定类型的Map
      *
-     * @param json       json数据
-     * @param mapClass   map类型
-     * @param keyClass   key类型
-     * @param valueClass value类型
-     * @param <K>        key类型
-     * @param <V>        value类型
-     * @return map
+     * @param <K>        Map键的类型
+     * @param <V>        Map值的类型
+     * @param json       JSON字符串
+     * @param mapClass   Map实现类的Class对象
+     * @param keyClass   Map键类型的Class对象
+     * @param valueClass Map值类型的Class对象
+     * @return          解析后的Map对象，如果解析失败则返回空Map
      */
     public static <K, V> Map<K, V> toMap(String json, Class<? extends Map> mapClass, Class<K> keyClass,
-                                         Class<V> valueClass) {
+                                        Class<V> valueClass) {
         if (StringUtil.isEmpty(json) || mapClass == null) {
             return new HashMap<>();
         }

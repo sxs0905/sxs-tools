@@ -21,10 +21,14 @@ import java.util.Enumeration;
  */
 public final class RsaReadUtil {
 
+    /** 日志记录器 */
     private static final Logger logger = LoggerFactory.getLogger(RsaReadUtil.class);
 
     /**
-     * 根据Cer文件读取公钥
+     * 根据Cer证书文件读取RSA公钥
+     *
+     * @param pubCerPath 公钥证书文件路径
+     * @return 公钥对象，如果读取失败则返回null
      */
     public static PublicKey getPublicKeyFromFile(String pubCerPath) {
         try (FileInputStream pubKeyStream = new FileInputStream(pubCerPath)) {
@@ -38,7 +42,10 @@ public final class RsaReadUtil {
     }
 
     /**
-     * 根据公钥Cer文本串读取公钥
+     * 根据公钥证书文本内容读取RSA公钥
+     *
+     * @param pubKeyText 公钥证书文本内容
+     * @return 公钥对象，如果解析失败则返回null
      */
     public static PublicKey getPublicKeyByText(String pubKeyText) {
         try {
@@ -62,6 +69,10 @@ public final class RsaReadUtil {
 
     /**
      * 根据私钥路径读取私钥
+     *
+     * @param pfxPath     PFX/P12格式私钥文件路径
+     * @param priKeyPass  私钥文件密码
+     * @return           私钥对象，如果读取失败则返回null
      */
     public static PrivateKey getPrivateKeyFromFile(String pfxPath, String priKeyPass) {
         try (InputStream priKeyStream = new FileInputStream(pfxPath)) {
@@ -75,7 +86,11 @@ public final class RsaReadUtil {
     }
 
     /**
-     * 根据PFX私钥字节流读取私钥
+     * 根据PFX/P12格式私钥字节流读取RSA私钥
+     *
+     * @param pfxBytes   私钥文件的字节数组
+     * @param priKeyPass 私钥文件密码
+     * @return 私钥对象，如果读取失败则返回null
      */
     public static PrivateKey getPrivateKeyByStream(byte[] pfxBytes, String priKeyPass) {
         try {

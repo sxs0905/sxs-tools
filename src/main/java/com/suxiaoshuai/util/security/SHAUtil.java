@@ -5,15 +5,26 @@ import org.slf4j.LoggerFactory;
 
 import java.security.MessageDigest;
 
+/**
+ * SHA加密工具类
+ * 
+ * 提供SHA系列加密算法的实现，包括SHA-1和SHA-256加密方法。
+ */
 public class SHAUtil {
 
     private static final Logger logger = LoggerFactory.getLogger(SHAUtil.class);
 
+    /** SHA-1 算法名称常量 */
     public static final String KEY_SHA = "SHA";
+    
+    /** SHA-256 算法名称常量 */
     public static final String ALGORITHM = "SHA-256";
 
-    /***
-     * SHA加密（比MD5更安全）
+    /**
+     * SHA-1加密
+     *
+     * @param data 待加密的字节数组
+     * @return 加密后的字节数组，加密失败返回null
      */
     public static byte[] encryptSHA(byte[] data) {
         try {
@@ -27,7 +38,12 @@ public class SHAUtil {
 
     }
 
-
+    /**
+     * SHA-1加密，并转换为十六进制字符串
+     *
+     * @param content 待加密的字符串
+     * @return 加密后的十六进制字符串，加密失败返回null
+     */
     public static String SHAEncrypt(final String content) {
         try {
             MessageDigest sha = MessageDigest.getInstance(KEY_SHA);
@@ -45,8 +61,12 @@ public class SHAUtil {
         return null;
     }
 
-
-    // SHA-256加密
+    /**
+     * SHA-256加密，并转换为十六进制字符串
+     *
+     * @param sourceStr 待加密的字符串
+     * @return 加密后的十六进制字符串，加密失败返回null
+     */
     public static String SHA256Encrypt(String sourceStr) {
         try {
             MessageDigest md = MessageDigest.getInstance(ALGORITHM);
@@ -60,6 +80,12 @@ public class SHAUtil {
         return null;
     }
 
+    /**
+     * 将字节数组转换为十六进制字符串
+     *
+     * @param origBytes 原始字节数组
+     * @return 转换后的十六进制字符串
+     */
     private static String getDigestStr(byte[] origBytes) {
         String tempStr = null;
         StringBuilder stb = new StringBuilder();

@@ -2,6 +2,19 @@ package com.suxiaoshuai.constants;
 
 import java.util.regex.Pattern;
 
+/**
+ * 日期格式常量类
+ *
+ * 包含以下几类日期格式：
+ * <ul>
+ *     <li>标准格式（Normal）：常用的标准日期格式</li>
+ *     <li>纯数字格式（Pure）：不带分隔符的日期格式</li>
+ *     <li>其他格式（Others）：特定场景使用的日期格式，如 HTTP、UTC 等</li>
+ * </ul>
+ *
+ * @author suxiaoshuai
+ * @since 1.0.0
+ */
 public class DatePatternConstant {
 
     /**

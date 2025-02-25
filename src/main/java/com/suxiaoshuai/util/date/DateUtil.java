@@ -8,6 +8,20 @@ import org.slf4j.LoggerFactory;
 import java.util.Calendar;
 import java.util.Date;
 
+/**
+ * 日期工具类
+ *
+ * 提供日期时间相关的常用操作，包括：
+ * <ul>
+ *     <li>日期格式化和解析</li>
+ *     <li>日期时间计算</li>
+ *     <li>日期属性获取</li>
+ *     <li>时间段判断</li>
+ * </ul>
+ *
+ * @author suxiaoshuai
+ * @since 1.0.0
+ */
 public class DateUtil {
 
     private static final Logger logger = LoggerFactory.getLogger(DateUtil.class);
@@ -30,7 +44,14 @@ public class DateUtil {
     public static final int DAY_OF_SECONDS = HOUR_OF_SECONDS * 24;
 
 
+    /**
+     * 默认日期时间格式
+     */
     public static final String DEFAULT_FORMAT = DatePatternConstant.NORM_DATETIME_PATTERN;
+    
+    /**
+     * 默认日期格式（年月日）
+     */
     public static final String DEFAULT_YMD = DatePatternConstant.NORM_DATE_PATTERN;
 
     /**
@@ -144,9 +165,9 @@ public class DateUtil {
     }
 
     /**
-     * Gets time stamp.
+     * 获取时间戳
      *
-     * @return the time stamp
+     * @return 返回时间戳字符串
      */
     public static String getTimeStamp() {
         return ThreadSafeDateUtil.format(new Date(), DatePatternConstant.PURE_DATETIME_PATTERN);
@@ -252,6 +273,13 @@ public class DateUtil {
         return c.getTimeInMillis();
     }
 
+    /**
+     * 获取日历字段值
+     *
+     * @param date 日期
+     * @param unit 日历字段单位 {@link Calendar}
+     * @return 返回对应字段的值，如果日期为空则返回 null
+     */
     private static Integer calendarGet(Date date, int unit) {
         if (date == null) {
             return null;

@@ -2,23 +2,30 @@ package com.suxiaoshuai.util.system;
 
 /**
  * 代表当前用户的信息。
+ * 
  * @author sxs
  */
 public class UserInfo {
 
+    /** 当前登录用户的名字 */
     private final String USER_NAME = SystemUtil.get("user.name", false);
+    /** 当前登录用户的home目录 */
     private final String USER_HOME = SystemUtil.get("user.home", false);
+    /** 当前工作目录 */
     private final String USER_DIR = SystemUtil.get("user.dir", false);
+    /** 当前用户的语言设置 */
     private final String USER_LANGUAGE = SystemUtil.get("user.language", false);
-    private final String USER_COUNTRY = ((SystemUtil.get("user.country", false) == null) ? SystemUtil.get("user.region", false) : SystemUtil.get("user.country", false));
+    /** 当前用户的国家或区域设置 */
+    private final String USER_COUNTRY = ((SystemUtil.get("user.country", false) == null)
+            ? SystemUtil.get("user.region", false)
+            : SystemUtil.get("user.country", false));
+    /** 系统临时目录 */
     private final String JAVA_IO_TMPDIR = SystemUtil.get("java.io.tmpdir", false);
 
     /**
      * 取得当前登录用户的名字（取自系统属性：<code>user.name</code>）。
-     * <p>
-     * <p>
+     * 
      * 例如：<code>"admin"</code>
-     * </p>
      *
      * @return 属性值，如果不能取得（因为Java安全限制）或值不存在，则返回<code>null</code>。
      * @since Java 1.1
@@ -29,10 +36,8 @@ public class UserInfo {
 
     /**
      * 取得当前登录用户的home目录（取自系统属性：<code>user.home</code>）。
-     * <p>
-     * <p>
+     * 
      * 例如：<code>"/home/admin"</code>
-     * </p>
      *
      * @return 属性值，如果不能取得（因为Java安全限制）或值不存在，则返回<code>null</code>。
      * @since Java 1.1
@@ -43,10 +48,8 @@ public class UserInfo {
 
     /**
      * 取得当前目录（取自系统属性：<code>user.dir</code>）。
-     * <p>
-     * <p>
+     *
      * 例如：<code>"/home/admin/working"</code>
-     * </p>
      *
      * @return 属性值，如果不能取得（因为Java安全限制）或值不存在，则返回<code>null</code>。
      * @since Java 1.1
@@ -57,10 +60,8 @@ public class UserInfo {
 
     /**
      * 取得临时目录（取自系统属性：<code>java.io.tmpdir</code>）。
-     * <p>
-     * <p>
+     *
      * 例如：<code>"/tmp"</code>
-     * </p>
      *
      * @return 属性值，如果不能取得（因为Java安全限制）或值不存在，则返回<code>null</code>。
      */
@@ -70,10 +71,8 @@ public class UserInfo {
 
     /**
      * 取得当前登录用户的语言设置（取自系统属性：<code>user.language</code>）。
-     * <p>
-     * <p>
+     *
      * 例如：<code>"zh"</code>、<code>"en"</code>等
-     * </p>
      *
      * @return 属性值，如果不能取得（因为Java安全限制）或值不存在，则返回<code>null</code>。
      */
@@ -82,11 +81,10 @@ public class UserInfo {
     }
 
     /**
-     * 取得当前登录用户的国家或区域设置（取自系统属性：JDK1.4 <code>user.country</code>或JDK1.2 <code>user.region</code>）。
-     * <p>
-     * <p>
+     * 取得当前登录用户的国家或区域设置（取自系统属性：JDK1.4 <code>user.country</code>或JDK1.2
+     * <code>user.region</code>）。
+     *
      * 例如：<code>"CN"</code>、<code>"US"</code>等
-     * </p>
      *
      * @return 属性值，如果不能取得（因为Java安全限制）或值不存在，则返回<code>null</code>。
      */

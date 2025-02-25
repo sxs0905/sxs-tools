@@ -5,12 +5,18 @@ import com.suxiaoshuai.util.string.StringUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * 线程安全的日期工具类
+ * 
+ * 使用 ThreadLocal 实现线程安全的日期格式化和解析功能。
+ * 通过 Map 缓存不同格式的 SimpleDateFormat 实例，确保每个线程使用独立的格式化器，
+ * 避免多线程并发访问时的安全问题。
+ */
 public class ThreadSafeDateUtil {
 
     private static final Logger logger = LoggerFactory.getLogger(ThreadSafeDateUtil.class);
@@ -28,8 +34,8 @@ public class ThreadSafeDateUtil {
     /**
      * 返回一个ThreadLocal的sdf,每个线程只会new一次sdf
      *
-     * @param pattern 具体格式
-     * @return 返回一个时间格式化实例
+     * @param pattern 日期格式模式
+     * @return 返回一个线程安全的SimpleDateFormat实例
      */
     private static SimpleDateFormat getSdf(final String pattern) {
         ThreadLocal<SimpleDateFormat> tl = sdfMap.get(pattern);
@@ -52,11 +58,11 @@ public class ThreadSafeDateUtil {
     }
 
     /**
-     * 用ThreadLocal来获取SimpleDateFormat,这样每个线程只会有一个SimpleDateFormat
+     * 使用ThreadLocal格式化日期，确保线程安全
      *
-     * @param date    时间
-     * @param pattern 格式
-     * @return 格式化后数据
+     * @param date    待格式化的日期
+     * @param pattern 日期格式模式
+     * @return 格式化后的日期字符串，如果date或pattern为空则返回空字符串
      */
     public static String format(Date date, String pattern) {
 

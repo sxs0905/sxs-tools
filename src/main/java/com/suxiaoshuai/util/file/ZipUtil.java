@@ -20,26 +20,28 @@ import java.util.Enumeration;
 import java.util.List;
 
 /**
- * Created by Han on 2017/9/14.
+ * ZIP 文件压缩和解压工具类
+ * 
+ * @author sxs
  */
 public class ZipUtil {
-
+    /** 日志记录器 */
     private static final Logger logger = LoggerFactory.getLogger(ZipUtil.class);
 
+    /** ZIP 文件后缀 */
     private static final String ZIP_FILE = FileConstant.FILE_NAME_SEPARATOR + FileConstant.FILE_SUFFIX_ZIP;
 
-    /**
-     * 文件读取缓冲区大小
-     */
+    /** 文件读取缓冲区大小 */
     private static final int CACHE_SIZE = 1024;
 
     /**
-     * 将存放在sourceFilePath目录下的源文件，打包成fileName名称的zip文件，并存放到zipFilePath路径下
+     * 将指定目录下的文件打包成 ZIP 文件
      *
-     * @param sourcePath 源文件
+     * @param sourcePath 源文件目录路径
      * @param zipPath    压缩文件保存路径
-     * @param fileName   压缩文件名
-     * @param charSet    编码
+     * @param fileName   压缩文件名（不含后缀），如果为空则使用当前时间戳
+     * @param charSet    字符编码，如果为空则使用 UTF-8
+     * @throws SxsToolsException 当源路径或目标路径为空，或目标路径在源路径下时抛出异常
      */
     public static void zip(String sourcePath, String zipPath, String fileName, String charSet) {
         FileOutputStream fos = null;
@@ -51,7 +53,9 @@ public class ZipUtil {
             if (zipPath.contains(sourcePath)) {
                 throw new SxsToolsException("生成的zip文件路径在待压缩文件目录下,无法完成压缩操作");
             }
-            fileName = StringUtil.isBlank(fileName) ? DateUtil.formatDate(new Date(), DatePatternConstant.PURE_DATETIME_PATTERN) : fileName;
+            fileName = StringUtil.isBlank(fileName)
+                    ? DateUtil.formatDate(new Date(), DatePatternConstant.PURE_DATETIME_PATTERN)
+                    : fileName;
             File targetFileDirectory = new File(zipPath);
             if (!targetFileDirectory.exists()) {
                 targetFileDirectory.mkdirs();
@@ -62,7 +66,8 @@ public class ZipUtil {
                     String name = file.getName();
                     name = name.substring(0, name.lastIndexOf(".") == -1 ? name.length() : name.lastIndexOf("."));
                     if (fileName.equalsIgnoreCase(name)) {
-                        fileName = fileName + "_" + DateUtil.formatDate(new Date(), DatePatternConstant.PURE_DATETIME_PATTERN);
+                        fileName = fileName + "_"
+                                + DateUtil.formatDate(new Date(), DatePatternConstant.PURE_DATETIME_PATTERN);
                         break;
                     }
                 }
@@ -87,6 +92,14 @@ public class ZipUtil {
         }
     }
 
+    /**
+     * 递归压缩文件或目录
+     *
+     * @param file       待压缩的文件或目录
+     * @param parentPath 父级目录路径
+     * @param zos        ZIP 输出流
+     * @throws IOException IO异常
+     */
     private static void writeZip(File file, String parentPath, ZipOutputStream zos) throws IOException {
         if (!file.exists()) {
             return;
@@ -118,12 +131,13 @@ public class ZipUtil {
     }
 
     /**
-     * 解压zip文件
+     * 解压 ZIP 文件到指定目录
      *
-     * @param zipFilePath    待解压文件
-     * @param targetFilePath 解压目录
-     * @param charset        编码
-     * @return 具体解压后的文件
+     * @param zipFilePath    待解压的 ZIP 文件
+     * @param targetFilePath 解压目标目录
+     * @param charset        字符编码，如果为空则使用 UTF-8
+     * @return 解压后的文件列表
+     * @throws Exception 当 ZIP 文件不存在或目标路径为空时抛出异常
      */
     public static List<File> unzip(File zipFilePath, String targetFilePath, String charset) throws Exception {
         if (zipFilePath == null || !zipFilePath.exists()) {

@@ -4,8 +4,14 @@ import org.apache.commons.text.StringEscapeUtils;
 import org.jsoup.Jsoup;
 import org.jsoup.safety.Safelist;
 
+/**
+ * XSS 防护工具类
+ * 提供对用户输入内容的 XSS 防护功能，支持多种转义模式和富文本白名单
+ *
+ * @author sxs
+ */
 public class XssUtil {
-
+    /** 富文本内容白名单配置 */
     public static final Safelist RICH_TEXT_WHITELIST = Safelist.relaxed()
             // 结构标签
             .addTags("div", "p", "br", "hr", "pre", "blockquote", "h1", "h2", "h3", "h4", "h5", "h6", "ul", "ol", "li",
@@ -41,6 +47,9 @@ public class XssUtil {
 
     /**
      * 对输入字符串进行转义，防止 XSS 攻击
+     *
+     * @param input 需要转义的字符串
+     * @return 转义后的安全字符串，如果输入为空则返回空字符串
      */
     public static String escape(String input) {
         if (StringUtil.isBlank(input)) {
@@ -50,12 +59,26 @@ public class XssUtil {
     }
 
     // 基础处理逻辑（同前）
+    /**
+     * 根据指定的转义模式处理输入字符串
+     *
+     * @param input 需要处理的字符串
+     * @param mode  转义模式
+     * @return 处理后的安全字符串，如果输入为空则返回空字符串
+     */
     public static String process(String input, EscapeModeEnum mode) {
         // 实现同之前的process方法
         return process(input, mode, null);
     }
 
-    // 基础处理逻辑（同前）
+    /**
+     * 根据指定的转义模式和白名单处理输入字符串
+     *
+     * @param input    需要处理的字符串
+     * @param mode     转义模式
+     * @param safelist 自定义的安全标签白名单，如果为null则使用默认白名单
+     * @return 处理后的安全字符串，根据不同模式进行相应的转义处理
+     */
     public static String process(String input, EscapeModeEnum mode, Safelist safelist) {
         safelist = safelist == null ? RICH_TEXT_WHITELIST : safelist;
         // 实现同之前的process方法
@@ -70,7 +93,10 @@ public class XssUtil {
     }
 
     /**
-     * 只过滤尖括号
+     * 去除字符串中的尖括号，用于简单的 XSS 防护
+     *
+     * @param value 需要处理的字符串
+     * @return 处理后的字符串，如果输入为空则返回原值
      */
     private static String stripXSS(String value) {
         if (StringUtil.isBlank(value)) {

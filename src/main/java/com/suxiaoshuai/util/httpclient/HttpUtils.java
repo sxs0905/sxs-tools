@@ -17,10 +17,16 @@ import java.security.cert.X509Certificate;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
+/**
+ * HTTP 请求工具类，基于 OkHttp 实现
+ */
 public class HttpUtils {
 
     private static final Logger logger = LoggerFactory.getLogger(HttpUtils.class);
     private static volatile OkHttpClient okHttpClient = null;
+    /**
+     * HTTP 请求超时时间，单位：秒
+     */
     public static final int TIME_OUT = 60;
 
     static {
@@ -212,7 +218,10 @@ public class HttpUtils {
 
 
     /**
-     * 生成安全套接字工厂，用于https请求的证书跳过
+     * 生成安全套接字工厂，用于 HTTPS 请求的证书跳过
+     *
+     * @param trustAllCerts 信任管理器数组
+     * @return SSL 套接字工厂
      */
     private static SSLSocketFactory createSSLSocketFactory(TrustManager[] trustAllCerts) {
         SSLSocketFactory ssfFactory = null;
@@ -226,6 +235,11 @@ public class HttpUtils {
         return ssfFactory;
     }
 
+    /**
+     * 构建信任所有证书的信任管理器
+     *
+     * @return 信任管理器数组
+     */
     private static TrustManager[] buildTrustManagers() {
         return new TrustManager[]{
                 new X509TrustManager() {

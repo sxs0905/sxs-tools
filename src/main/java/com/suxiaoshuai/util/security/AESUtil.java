@@ -24,22 +24,49 @@ import java.security.spec.KeySpec;
 public class AESUtil {
     private static final Logger logger = LoggerFactory.getLogger(AESUtil.class);
 
+    /**
+     * AES 加密算法名称常量
+     */
     public static final String ALGORITHM = "AES";
+    
+    /**
+     * 密钥派生算法常量
+     */
     private static final String DERIVATION_ALGORITHM = "PBKDF2WithHmacSHA256";
 
-    private static final int DEFAULT_ITERATIONS = 65536;     // PBKDF2 迭代次数
+    /**
+     * PBKDF2 默认迭代次数
+     */
+    private static final int DEFAULT_ITERATIONS = 65536;
 
-    private static final String DEFAULT_CIPHER_ALGORITHM = "AES/GCM/NoPadding"; // 默认使用GCM模式
-    private static final int GCM_TAG_LENGTH = 128; // GCM模式校验位长度
+    /**
+     * 默认加密模式，使用 GCM 模式
+     */
+    private static final String DEFAULT_CIPHER_ALGORITHM = "AES/GCM/NoPadding";
+    
+    /**
+     * GCM 模式认证标签长度（bits）
+     */
+    private static final int GCM_TAG_LENGTH = 128;
+    
+    /**
+     * 初始化向量长度（bytes）
+     */
     private static final int IV_LENGTH = 12;
 
-    // AES/CBC/NOPaddin
-    // AES 默认模式
-    // 使用CBC模式, 在初始化Cipher对象时, 需要增加参数, 初始化向量IV : IvParameterSpec iv = new IvParameterSpec(key.getBytes());
-    // NOPadding: 使用NOPadding模式时, 原文长度必须是8byte的整数倍
+    /**
+     * CBC 模式的加密算法/填充组合
+     */
     public static final String CBC = "AES/CBC/PKCS5Padding";
+    
+    /**
+     * ECB 模式的加密算法/填充组合
+     */
     public static final String ECB = "AES/ECB/PKCS5Padding";
 
+    /**
+     * 安全随机数生成器
+     */
     private static final SecureRandom secureRandom = new SecureRandom();
 
     /**

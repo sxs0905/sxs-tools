@@ -17,49 +17,40 @@ import java.security.spec.PKCS8EncodedKeySpec;
 import java.security.spec.X509EncodedKeySpec;
 
 /**
- * Created by Han on 2017/9/12.
+ * RSA加密工具类，提供RSA加密、解密、签名、验签等功能。
+ * 
+ * @author sxs
  */
 public class RsaUtil {
 
+    /** 日志记录器 */
     private static final Logger log = LoggerFactory.getLogger(RsaUtil.class);
 
+    /** RSA密钥长度 */
     private static final int KEY_INIT_SIZE = 1024;
+
+    /** RSA签名算法 */
     public static final String SIGN_ALGORITHMS = "SHA1WithRSA";
+
+    /** 默认字符编码 */
     private static final String DEFAULT_ENCODING = CharsetUtil.UTF_8;
-    /**
-     * 加密算法RSA
-     */
+
+    /** RSA加密算法名称 */
     public static final String KEY_ALGORITHM = "RSA";
 
-    /**
-     * 签名算法
-     */
+    /** RSA签名算法名称 */
     public static final String SIGNATURE_ALGORITHM = "MD5withRSA";
 
-    /**
-     * 获取公钥的key
-     */
-    private static final String PUBLIC_KEY = "RSAPublicKey";
-
-    /**
-     * 获取私钥的key
-     */
-    private static final String PRIVATE_KEY = "RSAPrivateKey";
-
-    /**
-     * RSA最大加密明文大小
-     */
+    /** RSA单次加密最大明文长度 */
     private static final int MAX_ENCRYPT_BLOCK = 117;
 
-    /**
-     * RSA最大解密密文大小
-     */
+    /** RSA单次解密最大密文长度 */
     private static final int MAX_DECRYPT_BLOCK = 128;
 
-
     /**
-     * 生成公钥和私钥
-     * 默认长度：1024
+     * 生成RSA密钥对
+     *
+     * @return 包含公钥和私钥的键值对，如果生成失败则返回空值对
      */
     public static Pair<RSAPublicKey, RSAPrivateKey> getKeys() {
         try {
@@ -78,6 +69,10 @@ public class RsaUtil {
 
     /**
      * 根据私钥文件路径加载pfx私钥文件
+     *
+     * @param pfxPath    pfx私钥文件路径
+     * @param priKeyPass 私钥文件密码
+     * @return 私钥对象，如果加载失败则返回null
      */
     public static PrivateKey getPrivateKeyByFile(String pfxPath, String priKeyPass) {
         try {
@@ -93,6 +88,7 @@ public class RsaUtil {
      *
      * @param pfxBytes   文件流数据
      * @param priKeyPass 私钥密码
+     * @return 私钥对象，如果加载失败则返回null
      */
     public static PrivateKey getPrivateKeyByStream(byte[] pfxBytes, String priKeyPass) {
         try {
@@ -107,6 +103,7 @@ public class RsaUtil {
      * 通过cer文件路径加载公钥
      *
      * @param pubCerPath 公钥路径
+     * @return 公钥对象，如果加载失败则返回null
      */
     public static PublicKey getPublicKeyByCerFile(String pubCerPath) {
         try {
@@ -121,6 +118,7 @@ public class RsaUtil {
      * 根据公钥内容加载cer格式公钥
      *
      * @param pubKeyText 公钥内容
+     * @return 公钥对象，如果加载失败则返回null
      */
     public static PublicKey getPublicKeyByCerContent(String pubKeyText) {
         try {
@@ -134,8 +132,10 @@ public class RsaUtil {
     /**
      * 根据私钥文件加密
      *
+     * @param src     待加密的原文
      * @param pfxPath 私钥证书路径
      * @param pwd     证书密码
+     * @return 加密后的字符串，如果加密失败则返回null
      */
     public static String encryptByPriPfxFile(String src, String pfxPath, String pwd) {
 
@@ -152,6 +152,7 @@ public class RsaUtil {
      * @param src        待加密原文
      * @param pfxBytes   文件流
      * @param priKeyPass 私钥文件密码
+     * @return 加密后的字符串，如果加密失败则返回null
      */
     public static String encryptByPriPfxStream(String src, byte[] pfxBytes, String priKeyPass) {
         PrivateKey privateKey = getPrivateKeyByStream(pfxBytes, priKeyPass);
@@ -163,6 +164,7 @@ public class RsaUtil {
      *
      * @param src        待解密原文
      * @param pubCerPath 公钥cer文件路径
+     * @return 解密后的字符串，如果解密失败则返回null
      */
     public static String decryptByPubCerFile(String src, String pubCerPath) {
 
@@ -174,6 +176,7 @@ public class RsaUtil {
      *
      * @param src        待解密原文
      * @param pubKeyText 公钥内容
+     * @return 解密后的字符串，如果解密失败则返回null
      */
     public static String decryptByPubCerText(String src, String pubKeyText) {
         return decryptByPublicKey(src, getPublicKeyByCerContent(pubKeyText));
@@ -181,6 +184,10 @@ public class RsaUtil {
 
     /**
      * 根据私钥加密
+     *
+     * @param src        需要加密的原文
+     * @param privateKey 私钥对象
+     * @return 加密后的十六进制字符串，如果加密失败则返回null
      */
     public static String encryptByPrivateKey(String src, PrivateKey privateKey) {
         try {
@@ -197,7 +204,11 @@ public class RsaUtil {
     }
 
     /**
-     * RSA私钥签名
+     * RSA私钥签名,默认UTF-8编码
+     *
+     * @param content    待签名数据
+     * @param privateKey 商户私钥
+     * @return 签名值
      */
     public static String signWithPriKey(String content, String privateKey) {
         return signWithPriKey(content, privateKey, DEFAULT_ENCODING);
@@ -227,12 +238,11 @@ public class RsaUtil {
     }
 
     /**
-     * <p>
-     * 公钥加密
-     * </p>
+     * 使用公钥加密数据
      *
-     * @param data      源数据
+     * @param data      源数据字节数组
      * @param publicKey 公钥(BASE64编码)
+     * @return 加密后的字节数组，如果加密失败则返回null
      */
     public static byte[] encryptByPublicKey(byte[] data, String publicKey) {
         try {
@@ -269,12 +279,11 @@ public class RsaUtil {
     }
 
     /**
-     * <p>
-     * 私钥加密
-     * </p>
+     * 使用私钥加密数据
      *
-     * @param data       源数据
+     * @param data       源数据字节数组
      * @param privateKey 私钥(BASE64编码)
+     * @return 加密后的字节数组，如果加密失败则返回null
      */
     public static byte[] encryptByPrivateKey(byte[] data, String privateKey) {
         try {
@@ -311,12 +320,12 @@ public class RsaUtil {
     }
 
     /**
-     * <P>
-     * 私钥解密
-     * </p>
+     * 使用私钥解密数据
      *
-     * @param encryptedData 已加密数据
+     * @param encryptedData 已加密的数据字节数组
      * @param privateKey    私钥(BASE64编码)
+     * @return 解密后的字节数组，如果解密失败则返回null
+     * @throws Exception 解密过程中可能出现的异常
      */
     public static byte[] decryptByPrivateKey(byte[] encryptedData, String privateKey) throws Exception {
         try {
@@ -353,10 +362,11 @@ public class RsaUtil {
     }
 
     /**
-     * 根据公钥解密
+     * 使用公钥解密数据
      *
-     * @param src       待解密原文
-     * @param publicKey cer文件公钥
+     * @param src       待解密的十六进制字符串
+     * @param publicKey 公钥对象
+     * @return 解密后的字符串，如果解密失败则返回null
      */
     public static String decryptByPublicKey(String src, PublicKey publicKey) {
 
@@ -373,12 +383,11 @@ public class RsaUtil {
     }
 
     /**
-     * <p>
-     * 公钥解密
-     * </p>
+     * 使用公钥解密数据
      *
-     * @param encryptedData 已加密数据
+     * @param encryptedData 已加密的数据字节数组
      * @param publicKey     公钥(BASE64编码)
+     * @return 解密后的字节数组，如果解密失败则返回null
      */
     public static byte[] decryptByPublicKey(byte[] encryptedData, String publicKey) {
         try (ByteArrayOutputStream out = new ByteArrayOutputStream()) {
@@ -412,7 +421,12 @@ public class RsaUtil {
     }
 
     /**
-     * RSA公钥验签
+     * RSA公钥验签，默认UTF-8编码
+     *
+     * @param content   待签名数据
+     * @param sign      签名值
+     * @param publicKey 公钥
+     * @return 布尔值
      */
     public static boolean verifySignWithPubKey(String content, String sign, String publicKey) {
         return verifySignWithPubKey(content, sign, publicKey, DEFAULT_ENCODING);
@@ -423,7 +437,7 @@ public class RsaUtil {
      *
      * @param content   待签名数据
      * @param sign      签名值
-     * @param publicKey 分配给开发商公钥
+     * @param publicKey 公钥
      * @param encode    字符集编码
      * @return 布尔值
      */
@@ -445,9 +459,10 @@ public class RsaUtil {
     /**
      * 私钥算法
      *
-     * @param srcData    源字节
-     * @param privateKey 私钥
-     * @param mode       加密 OR 解密
+     * @param srcData    源字节数据
+     * @param privateKey 私钥对象
+     * @param mode       加密模式（Cipher.ENCRYPT_MODE）或解密模式（Cipher.DECRYPT_MODE）
+     * @return 处理后的字节数组，如果处理失败则返回null
      */
     public static byte[] rsaByPrivateKey(byte[] srcData, PrivateKey privateKey, int mode) {
         try {
@@ -482,9 +497,10 @@ public class RsaUtil {
     /**
      * 公钥算法
      *
-     * @param srcData   源字节
-     * @param publicKey 公钥
-     * @param mode      加密 OR 解密
+     * @param srcData   源字节数据
+     * @param publicKey 公钥对象
+     * @param mode      加密模式（Cipher.ENCRYPT_MODE）或解密模式（Cipher.DECRYPT_MODE）
+     * @return 处理后的字节数组，如果处理失败则返回null
      */
     public static byte[] rsaByPublicKey(byte[] srcData, PublicKey publicKey, int mode) {
         try {
@@ -516,6 +532,13 @@ public class RsaUtil {
         return null;
     }
 
+    /**
+     * 合并两个字节数组
+     *
+     * @param array1 第一个字节数组
+     * @param array2 第二个字节数组
+     * @return 合并后的新字节数组，如果其中一个数组为null，则返回另一个数组的副本
+     */
     public static byte[] addAll(byte[] array1, byte[] array2) {
         if (array1 == null) {
             return clone(array2);
@@ -528,6 +551,12 @@ public class RsaUtil {
         return joinedArray;
     }
 
+    /**
+     * 复制字节数组
+     *
+     * @param array 待复制的字节数组
+     * @return 复制后的新字节数组，如果输入为null则返回null
+     */
     public static byte[] clone(byte[] array) {
         if (array == null) {
             return null;
@@ -535,6 +564,17 @@ public class RsaUtil {
         return array.clone();
     }
 
+    /**
+     * 截取字节数组的指定部分
+     *
+     * @param array               源字节数组
+     * @param startIndexInclusive 起始位置（包含）
+     * @param endIndexExclusive   结束位置（不包含）
+     * @return 截取后的新字节数组，如果输入为null则返回null；
+     *         如果起始位置小于0则从0开始；
+     *         如果结束位置大于数组长度则取到数组末尾；
+     *         如果计算得到的新数组长度小于等于0则返回空数组
+     */
     public static byte[] subarray(byte[] array, int startIndexInclusive, int endIndexExclusive) {
         if (array == null) {
             return null;

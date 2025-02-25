@@ -9,38 +9,78 @@ import java.util.List;
 import java.util.regex.Pattern;
 
 /**
- * Description:
+ * 数据验证工具类
+ * 
+ * 提供各种常用的数据格式验证功能，包括手机号、身份证号、车牌号等的格式验证
  *
  * @author sxs
  */
 public class ValidateUtil {
-
+    /** 日志记录器 */
     private static final Logger logger = LoggerFactory.getLogger(ValidateUtil.class);
 
+    /** 手机号码正则表达式 */
     private static final String REGEX_MOBILE0 = "((\\+86|0086)?\\s*)(1\\d{10}|(^\\d{3,4}-\\d{7,8}$))";
 
+    /** 身份证号正则表达式 */
     private static final String REGEX_ID_NO = "(^[1-9]\\d{5}(18|19|20)\\d{2}((0[1-9])|(10|11|12))(([0-2][1-9])|10|20|30|31)\\d{3}[0-9Xx]$)|(^[1-9]\\d{5}\\d{2}((0[1-9])|(10|11|12))(([0-2][1-9])|10|20|30|31)\\d{3}$)";
 
+    /** 车牌号正则表达式 */
     private static final String REGEX_PLATE_NO = "([京津沪渝冀豫云辽黑湘皖鲁新苏浙赣鄂桂甘晋蒙陕吉闽贵粤青藏川宁琼]{1}(([A-HJ-Z]{1}[A-HJ-NP-Z0-9]{5})|([A-HJ-Z]{1}(([DF]{1}[A-HJ-NP-Z0-9]{1}[0-9]{4})|([0-9]{5}[DF]{1})))|([A-HJ-Z]{1}[A-D0-9]{1}[0-9]{3}警)))|([0-9]{6}使)|((([沪粤川云桂鄂陕蒙藏黑辽渝]{1}A)|鲁B|闽D|蒙E|蒙H)[0-9]{4}领)|(WJ[京津沪渝冀豫云辽黑湘皖鲁新苏浙赣鄂桂甘晋蒙陕吉闽贵粤青藏川宁琼·•]{1}[0-9]{4}[TDSHBXJ0-9]{1})|([VKHBSLJNGCE]{1}[A-DJ-PR-TVY]{1}[0-9]{5})";
+
+    /** 车辆识别代号正则表达式 */
     private static final String REGEX_VEHICLE_LICENSE_NO = "^[0-9A-Za-z]{1,50}$";
+
+    /** 数字格式正则表达式 */
     private static final String NUMBER = "(^[1-9]([0-9]{1,9})?(\\.[0-9]{1,4})?$)|(^(0){1}$)|(^[0-9]\\.[0-9]([0-9]{1,3})?$)";
+
+    /** 道路运输证号正则表达式 */
     private static final String REGEX_TRANSPORT_CERTIFICATE_NO = "^[0-9A-Za-z]{1,50}$";
+
+    /** 人名正则表达式（支持中英文、数字和括号） */
     public static final String REGEX_PERSON_NAME = "^[\\u4e00-\\u9fa50-9A-Za-z\\.\\(\\)]{1,50}$";
+
+    /** 银行网点信息正则表达式 */
     public static final String REGEX_BANK_BRANCH_INFO = "^[\\u4e00-\\u9fa50-9A-Za-z\\(\\)\\（\\）]{1,50}$";
+
+    /** 银行账号正则表达式 */
     public static final String REGEX_BANK_ACCOUNT_NO = "^\\d{16,23}$";
+
+    /** 通用字符正则表达式（支持中英文和数字） */
     public static final String REGEX_NUM_CHAR_COMMON = "^[\\u4e00-\\u9fa50-9A-Za-z]{1,50}$";
+
+    /** 图片验证码正则表达式 */
     public static final String REGEX_IMAGE_CODE = "[0-9A-Za-z]{4,6}";
+
+    /** 短信验证码正则表达式 */
     public static final String REGEX_SMS_CODE = "\\d{4,6}";
+
+    /** 权限值正则表达式 */
     public static final String REGEX_PERMISSION_VALUE = "^[a-zA-Z]+([a-zA-Z]+\\.){0,10}[a-zA-Z]+$";
+
+    /** 内容格式正则表达式（支持中英文、数字和常用标点符号） */
     public static final String REGEX_CONTENT = "^[,，、。()\\.?!0-9a-zA-Z\\u4e00-\\u9fa5]{1,200}$";
+
+    /** 车辆尺寸正则表达式 */
     public static final String REGEX_CAR_SIZE = "([1-9]\\d{3}[×Xx]){2}\\d{3,4}(mm|MM)";
+
+    /** 电话号码正则表达式（支持手机号和座机号） */
     public static final String REGEX_TEL = "^((1[3456789]\\d{9})|(\\d{3,4}-\\d{7,8}))";
 
+    /** 统一社会信用代码基础字符串 */
     private static final String BASE_CODE_STRING = "0123456789ABCDEFGHJKLMNPQRTUWXY";
+
+    /** 统一社会信用代码字符数组 */
     private static final char[] BASE_CODE_ARRAY = BASE_CODE_STRING.toCharArray();
+
+    /** 统一社会信用代码字符列表 */
     private static final List<Character> BASE_CODES = new ArrayList<>();
+
+    /** 统一社会信用代码正则表达式 */
     private static final String BASE_CODE_REGEX = "[" + BASE_CODE_STRING + "]{18}";
-    private static final int[] WEIGHT = {1, 3, 9, 27, 19, 26, 16, 17, 20, 29, 25, 13, 8, 24, 10, 30, 28};
+
+    /** 统一社会信用代码加权因子 */
+    private static final int[] WEIGHT = { 1, 3, 9, 27, 19, 26, 16, 17, 20, 29, 25, 13, 8, 24, 10, 30, 28 };
 
     static {
         for (char c : BASE_CODE_ARRAY) {
@@ -48,6 +88,13 @@ public class ValidateUtil {
         }
     }
 
+    /**
+     * 验证字符串是否匹配指定的正则表达式
+     *
+     * @param str   待验证的字符串
+     * @param regex 正则表达式
+     * @return 如果匹配返回true，否则返回false
+     */
     public static boolean verify(String str, String regex) {
         if (StringUtil.isEmpty(str)) {
             return false;
@@ -68,6 +115,8 @@ public class ValidateUtil {
     /**
      * 判断是否是身份证号
      *
+     * @param idCardNo 待验证的身份证号码
+     * @return 如果是有效的身份证号码返回true，否则返回false
      */
     public static boolean isIDNo(String idCardNo) {
         boolean matches = verify(idCardNo, REGEX_ID_NO);
@@ -82,9 +131,9 @@ public class ValidateUtil {
         try {
             char[] charArray = idCardNo.toCharArray();
             // 前十七位加权因子
-            int[] idCardWi = {7, 9, 10, 5, 8, 4, 2, 1, 6, 3, 7, 9, 10, 5, 8, 4, 2};
+            int[] idCardWi = { 7, 9, 10, 5, 8, 4, 2, 1, 6, 3, 7, 9, 10, 5, 8, 4, 2 };
             // 这是除以11后，可能产生的11位余数对应的验证码
-            String[] idCardY = {"1", "0", "X", "9", "8", "7", "6", "5", "4", "3", "2"};
+            String[] idCardY = { "1", "0", "X", "9", "8", "7", "6", "5", "4", "3", "2" };
             int sum = 0;
             for (int i = 0; i < idCardWi.length; i++) {
                 int current = Integer.parseInt(String.valueOf(charArray[i]));
@@ -100,12 +149,21 @@ public class ValidateUtil {
         }
     }
 
+    /**
+     * 验证身份证号（仅格式验证，不进行校验码验证）
+     *
+     * @param idCardNo 待验证的身份证号码
+     * @return 如果格式正确返回true，否则返回false
+     */
     public static boolean idCardNo(String idCardNo) {
         return verify(idCardNo, REGEX_ID_NO);
     }
 
     /**
      * 判断是否是车牌号
+     *
+     * @param content 待验证的车牌号
+     * @return 如果是有效的车牌号返回true，否则返回false
      */
     public static boolean carLicenseNo(String content) {
         return verify(content, REGEX_PLATE_NO);
@@ -113,6 +171,9 @@ public class ValidateUtil {
 
     /**
      * 判断是否是车辆识别代号
+     *
+     * @param content 待验证的车辆识别代号
+     * @return 如果是有效的车辆识别代号返回true，否则返回false
      */
     public static boolean isVehicleLicenseNo(String content) {
         return verify(content, REGEX_VEHICLE_LICENSE_NO);
@@ -120,6 +181,9 @@ public class ValidateUtil {
 
     /**
      * 判断是否是道路运输证号
+     *
+     * @param content 待验证的道路运输证号
+     * @return 如果是有效的道路运输证号返回true，否则返回false
      */
     public static boolean isTransportCertificateNo(String content) {
         return verify(content, REGEX_TRANSPORT_CERTIFICATE_NO);
@@ -127,6 +191,9 @@ public class ValidateUtil {
 
     /**
      * 是否是有效的统一社会信用代码
+     *
+     * @param socialCreditCode 待验证的统一社会信用代码
+     * @return 如果是有效的统一社会信用代码返回true，否则返回false
      */
     public static boolean isValidSocialCreditCode(String socialCreditCode) {
         if (StringUtil.isBlank(socialCreditCode) || !Pattern.matches(BASE_CODE_REGEX, socialCreditCode)) {

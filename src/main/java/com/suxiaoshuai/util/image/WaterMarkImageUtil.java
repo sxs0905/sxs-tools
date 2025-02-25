@@ -16,6 +16,9 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 
 /**
+ * 图片水印工具类
+ * 提供对图片添加文字水印和图片水印的功能，支持水印的旋转、透明度、间距等属性设置
+ *
  * @author sxs
  */
 public class WaterMarkImageUtil {
@@ -60,8 +63,9 @@ public class WaterMarkImageUtil {
      * 给图片添加水印图片、可设置水印图片旋转角度
      *
      * @param inputStream   源图片IO流
-     * @param waterMarkInfo 水印信息
-     * @return the input stream
+     * @param waterMarkInfo 水印信息，如果为null则使用默认配置
+     * @return 添加水印后的图片输入流
+     * @throws SxsToolsException 添加水印过程中发生异常
      */
     public static InputStream markImageByIcon(InputStream inputStream, ImageWaterMark waterMarkInfo) {
         logger.info(">>>>>>>>>>>>>>>>>>>>>>> add water mark image begin");
@@ -176,9 +180,10 @@ public class WaterMarkImageUtil {
      * 给图片添加水印文字、可设置水印文字的旋转角度
      * 生成文件后缀为png
      *
-     * @param inputStream   原始文件
-     * @param waterMarkInfo 水印信息
-     * @throws IOException the io exception
+     * @param inputStream   原始文件输入流
+     * @param waterMarkInfo 水印信息，如果为null则使用默认配置
+     * @return 添加水印后的图片输入流
+     * @throws IOException 读写图片过程中发生IO异常
      */
     public static InputStream markImageByText(InputStream inputStream, TextWaterMark waterMarkInfo) throws IOException {
         logger.info(">>>>>>>>>>>>>>>>>>>>>>> add water mark text begin");
@@ -258,6 +263,13 @@ public class WaterMarkImageUtil {
         return is;
     }
 
+    /**
+     * 在文本字符之间添加指定数量的空格
+     *
+     * @param text          原始文本
+     * @param letterSpacing 字符间距（空格数量）
+     * @return 添加了间距的文本，如果原文本为空或间距小于等于0则返回原文本
+     */
     private static String addTextSpace(String text, int letterSpacing) {
         logger.info("add space text:{}", text);
         if (StringUtil.isBlank(text) || letterSpacing <= 0) {
@@ -277,12 +289,25 @@ public class WaterMarkImageUtil {
         return sb.toString();
     }
 
+    /**
+     * 获取指定字体的度量信息
+     *
+     * @param font1 字体对象
+     * @return 字体度量信息
+     */
     private static FontMetrics getFontMetrics(Font font1) {
         BufferedImage img = new BufferedImage(1, 1, BufferedImage.TYPE_INT_ARGB);
         Graphics g = img.getGraphics();
         return g.getFontMetrics(font1);
     }
 
+    /**
+     * 将输入流写入指定路径的文件
+     *
+     * @param inputStream  输入流
+     * @param destFilePath 目标文件路径
+     * @throws IOException IO异常
+     */
     private static void out(InputStream inputStream, String destFilePath) throws IOException {
         OutputStream os = Files.newOutputStream(Paths.get(destFilePath));
         Util.copyStream(inputStream, os);
