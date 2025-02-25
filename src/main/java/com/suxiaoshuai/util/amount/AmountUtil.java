@@ -94,6 +94,8 @@ public class AmountUtil {
      */
     private static final int DEFAULT_DECIMAL_PLACES = 2;
 
+    private static final String LAST_SHOW_ = "整";
+
 
     private static final ThreadLocal<DecimalFormat> DECIMAL_FORMAT = ThreadLocal.withInitial(() -> {
         /*
@@ -174,15 +176,21 @@ public class AmountUtil {
      * @return 转换后的中文大写金额字符串，如果金额为 null 则返回 null
      * @throws SxsToolsException 当金额超过最大支持金额时抛出异常
      */
-    private static String toUpper(BigDecimal amount, Boolean needEven, Boolean withZeroJiao) {
+    public static String toUpper(BigDecimal amount, Boolean needEven, Boolean withZeroJiao) {
         logger.info("toUpper amount:{}, needEven:{}, withZeroJiao:{}", amount, needEven, withZeroJiao);
         if (amount == null) {
+            logger.info("amount is null");
             return null;
         }
+
+        if (BigDecimal.ZERO.compareTo(amount) == 0) {
+            return "零元" + (needEven ? "整" : "");
+        }
+
+        if (MAX_AMOUNT.compareTo(amount) < 0) {
+            throw new SxsToolsException("The amount is too large");
+        }
         try {
-            if (MAX_AMOUNT.compareTo(amount) < 0) {
-                throw new SxsToolsException("The amount is too large");
-            }
             needEven = needEven != null && needEven;
             StringBuilder sb = new StringBuilder();
 
