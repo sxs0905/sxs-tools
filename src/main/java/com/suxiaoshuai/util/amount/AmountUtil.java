@@ -23,6 +23,16 @@ import java.util.regex.Pattern;
  * <li>金额格式化处理</li>
  * </ul>
  * 中文数位：个，十，百，千，万，十万，百万，千万，亿，十亿，百亿，千亿，万亿，十万亿，百万亿，千万亿，亿亿
+ * 转大写基本规则
+ *  汉字使用
+ *      必须使用正楷或行书体，不可用简化字、谐音字替代（如 “零” 不可写作 “〇” 或 “另”）。
+ *  标准大写数字：
+ *      零、壹、贰、叁、肆、伍、陆、柒、捌、玖、拾、佰、仟、万、亿、元、角、分、整。
+ *  金额单位
+ *      主单位：元、角、分，不可省略（如 “¥100.00” 写作 “人民币壹佰元整”，不可写作 “壹佰整”）。
+ *  整数结尾：元后无角、分时需加 “整” 或 “正” 字（如 “¥500.00” 写作 “人民币伍佰元整”）。
+ *  “零” 的使用 连续多个零时：只写一个 “零”（如 “¥10005.00” 写作 “人民币壹万零伍元整”）。
+ *  角分位为零：无需重复写 “零”（如 “¥123.00” 写作 “人民币壹佰贰拾叁元整”）。
  *
  * @author suxiaoshuai
  * @since 1.0.0
@@ -130,13 +140,13 @@ public class AmountUtil {
     /**
      * 金额转中文大写
      * 金额支持小数点后两位
-     * 默认带整，不带零角
+     * 默认带整，带零角
      *
      * @param amount 待转换金额
      * @return 大写金额
      */
     public static String toUpper(BigDecimal amount) {
-        return toUpper(amount, true, false);
+        return toUpper(amount, true, true);
     }
 
     /**
@@ -240,17 +250,22 @@ public class AmountUtil {
                 // 小数第一位金额值
                 String decimalFirstIndexValue = amountDecimalPart.substring(0, 1);
                 // 是否带零角
-                if (withZeroJiao || !AMOUNT_CURRENT_INDEX_VALUE_IS_ZERO.equals(decimalFirstIndexValue)) {
+                if (!AMOUNT_CURRENT_INDEX_VALUE_IS_ZERO.equals(decimalFirstIndexValue)) {
                     firstUpperAmount = NUMBER_UPPER[Integer.parseInt(decimalFirstIndexValue)] + DECIMAL_UNITS[0];
                 }
                 // 小数部分最后一位
                 String decimalLastIndexValue = amountDecimalPart.substring(decimalLength - 1, decimalLength);
                 if (!AMOUNT_CURRENT_INDEX_VALUE_IS_ZERO.equals(decimalLastIndexValue)) {
                     lastUpperAmount = NUMBER_UPPER[Integer.parseInt(decimalLastIndexValue)] + DECIMAL_UNITS[1];
+                    if (withZeroJiao && AMOUNT_CURRENT_INDEX_VALUE_IS_ZERO.equals(decimalFirstIndexValue)) {
+                        firstUpperAmount = NUMBER_UPPER[Integer.parseInt(decimalFirstIndexValue)];
+                    }
                 }
             }
             sb.append(needEven && !containPoint ? "整" : "").append(firstUpperAmount).append(lastUpperAmount);
-            return sb.toString().replace("亿万", "亿");
+            String result = sb.toString().replace("亿万", "亿");
+            logger.info("amount to upper,origin:{}, result:{}", amount, result);
+            return result;
         } catch (Exception e) {
             logger.info("toUpper amount:{}, needEven:{},withZeroJiao:{},exception:", amount, needEven, withZeroJiao, e);
         }
@@ -285,7 +300,9 @@ public class AmountUtil {
             if (StringUtil.isNotBlank(pointPart)) {
                 result = result.add(handlePointPart(pointPart));
             }
-            return new BigDecimal(formatDecimal(result));
+            BigDecimal bigDecimal = new BigDecimal(formatDecimal(result));
+            logger.info("amount to lower,origin:{}, result:{},final:{}", upperCaseAmount, result, bigDecimal);
+            return bigDecimal;
         } catch (Exception e) {
             logger.error("amount toLower:{} exception:", upperCaseAmount, e);
             return null;
@@ -325,7 +342,9 @@ public class AmountUtil {
             DecimalFormat decimalFormat = DECIMAL_FORMAT.get();
             decimalFormat.setMinimumFractionDigits(decimalNumber);
             decimalFormat.setMaximumFractionDigits(decimalNumber);
-            return decimalFormat.format(amount);
+            String format = decimalFormat.format(amount);
+            logger.info("amount to format,origin:{},decimal number:{}, result:{}", amount, decimalNumber, format);
+            return format;
         } catch (Exception e) {
             logger.error("format amount with comma error: {}", amount, e);
             return null;
@@ -393,11 +412,10 @@ public class AmountUtil {
             index = matcher.end();
             lastMatchEnd = index;
         }
-
-        // 处理末尾没有单位的数字
-        if (lastMatchEnd < part.length()) {
-            String remainingDigits = part.substring(lastMatchEnd);
-            if (StringUtil.isNotBlank(remainingDigits)) {
+        String remainingDigits = part.substring(lastMatchEnd);
+        if (StringUtil.isNotBlank(remainingDigits)) {
+            // 处理末尾没有单位的数字
+            if ((!remainingDigits.contains("角") && !remainingDigits.contains("分")) && lastMatchEnd < part.length()) {
                 result = result.add(new BigDecimal(String.valueOf(handleDigit(remainingDigits))));
             }
         }

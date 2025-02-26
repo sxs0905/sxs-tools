@@ -15,31 +15,16 @@ import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * 金额转换工具类
- * - 测试场景包括：
- * - 空值处理
- * - 边界值测试
- * - 异常情况测试
- * - 正常值测试
- * - 特殊格式测试
- * - 主要测试场景：
- * - toUpper 方法：
- * - null 输入
- * - 超大金额
- * - 整数金额
- * - 带小数金额
- * - 特殊格式金额（如带零、整等）
- * - toLower 方法：
- * - null 输入
- * - 空字符串
- * - 各种面额的转换
- * - 带小数的金额
- * - 特殊格式（如零角、整等）
- * - format 方法：
- * - null 输入
- * - 不同小数位数的格式化
- * - 千分位分隔
- * - 负数处理
- * - 默认格式化
+ * 转大写基本规则
+ *  汉字使用
+ *      必须使用正楷或行书体，不可用简化字、谐音字替代（如 “零” 不可写作 “〇” 或 “另”）。
+ *  标准大写数字：
+ *      零、壹、贰、叁、肆、伍、陆、柒、捌、玖、拾、佰、仟、万、亿、元、角、分、整。
+ *  金额单位
+ *      主单位：元、角、分，不可省略（如 “¥100.00” 写作 “人民币壹佰元整”，不可写作 “壹佰整”）。
+ *  整数结尾：元后无角、分时需加 “整” 或 “正” 字（如 “¥500.00” 写作 “人民币伍佰元整”）。
+ *  “零” 的使用 连续多个零时：只写一个 “零”（如 “¥10005.00” 写作 “人民币壹万零伍元整”）。
+ *  角分位为零：无需重复写 “零”（如 “¥123.00” 写作 “人民币壹佰贰拾叁元整”）。
  */
 class AmountUtilTest {
 
@@ -63,7 +48,7 @@ class AmountUtilTest {
         @MethodSource("toUpperTestCases")
         @DisplayName("测试常规金额转换")
         void testNormalAmount(BigDecimal amount, String expected) {
-            assertEquals(expected, AmountUtil.toUpper(amount, true, false));
+            assertEquals(expected, AmountUtil.toUpper(amount, true, true));
         }
 
         private static Stream<Arguments> toUpperTestCases() {
@@ -77,7 +62,9 @@ class AmountUtilTest {
                     Arguments.of(new BigDecimal("100000000"), "壹亿元整"),
                     Arguments.of(new BigDecimal("1.23"), "壹元贰角叁分"),
                     Arguments.of(new BigDecimal("1.03"), "壹元零叁分"),
+                    Arguments.of(new BigDecimal("10005.00"), "壹万零伍元整"),
                     Arguments.of(new BigDecimal("1.30"), "壹元叁角"),
+                    Arguments.of(new BigDecimal("1200005000"), "壹拾贰亿零伍仟元整"),
                     Arguments.of(new BigDecimal("10001.23"), "壹万零壹元贰角叁分")
             );
         }
@@ -116,7 +103,7 @@ class AmountUtilTest {
                     Arguments.of("壹亿元整", new BigDecimal("100000000")),
                     Arguments.of("壹元贰角叁分", new BigDecimal("1.23")),
                     Arguments.of("壹元零叁分", new BigDecimal("1.03")),
-                    Arguments.of("壹元叁角", new BigDecimal("1.30")),
+                    Arguments.of("壹元叁角", new BigDecimal("1.3")),
                     Arguments.of("壹万零壹元贰角叁分", new BigDecimal("10001.23"))
             );
         }

@@ -12,7 +12,7 @@ import java.util.Map;
 
 /**
  * 线程安全的日期工具类
- * 
+ * <p>
  * 使用 ThreadLocal 实现线程安全的日期格式化和解析功能。
  * 通过 Map 缓存不同格式的 SimpleDateFormat 实例，确保每个线程使用独立的格式化器，
  * 避免多线程并发访问时的安全问题。
@@ -67,7 +67,7 @@ public class ThreadSafeDateUtil {
     public static String format(Date date, String pattern) {
 
         if (date == null || StringUtil.isBlank(pattern)) {
-            return "";
+            return null;
         }
 
         return getSdf(pattern).format(date);
