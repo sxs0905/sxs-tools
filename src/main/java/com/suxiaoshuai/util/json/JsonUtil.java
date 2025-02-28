@@ -7,6 +7,7 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
+import com.suxiaoshuai.constants.DatePatternConstant;
 import com.suxiaoshuai.util.string.StringUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -17,14 +18,15 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * json 工具类
+ * 使用 Jackson
+ */
 public class JsonUtil<T> {
 
     private static final Logger logger = LoggerFactory.getLogger(JsonUtil.class);
 
-
     private static final ObjectMapper objectMapper = new ObjectMapper();
-    // 日起格式化
-    private static final String STANDARD_FORMAT = "yyyy-MM-dd HH:mm:ss";
 
     static {
         // 对象的所有字段全部列入
@@ -34,16 +36,17 @@ public class JsonUtil<T> {
         // 忽略空Bean转json的错误
         objectMapper.configure(SerializationFeature.FAIL_ON_EMPTY_BEANS, false);
         // 所有的日期格式都统一为以下的样式，即yyyy-MM-dd HH:mm:ss
-        objectMapper.setDateFormat(new SimpleDateFormat(STANDARD_FORMAT));
+        objectMapper.setDateFormat(new SimpleDateFormat(DatePatternConstant.NORM_DATETIME_PATTERN));
         // 忽略 在json字符串中存在，但是在java对象中不存在对应属性的情况。防止错误
         objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
     }
 
-
     /**
      * 对象转Json格式字符串
      *
-     * @param obj 对象
+     * @param <T>  对象类型
+     * @param obj  需要转换的对象实例
+     * @return     JSON格式字符串，如果转换失败则返回null
      */
     public static <T> String toJson(T obj) {
         if (obj == null) {
@@ -60,8 +63,10 @@ public class JsonUtil<T> {
     /**
      * 字符串转换为自定义对象
      *
-     * @param str   要转换的字符串
-     * @param clazz 自定义对象的class对象
+     * @param <T>   目标对象类型
+     * @param str   要转换的JSON字符串
+     * @param clazz 目标类的Class对象
+     * @return      转换后的对象实例，如果转换失败则返回null
      */
     public static <T> T parse(String str, Class<T> clazz) {
         if (StringUtil.isEmpty(str) || clazz == null) {
@@ -75,6 +80,14 @@ public class JsonUtil<T> {
         }
     }
 
+    /**
+     * 从给定的JSON字符串反序列化为指定类型的对象
+     *
+     * @param <T>           目标对象类型
+     * @param str           JSON字符串
+     * @param typeReference 类型引用对象，用于处理泛型类型
+     * @return             转换后的对象实例，如果转换失败则返回null
+     */
     public static <T> T parse(String str, TypeReference<T> typeReference) {
         if (StringUtil.isEmpty(str) || typeReference == null) {
             return null;
@@ -87,10 +100,27 @@ public class JsonUtil<T> {
         }
     }
 
+    /**
+     * 解析JSON字符串为List集合
+     *
+     * @param <T>          集合元素类型
+     * @param json         JSON字符串
+     * @param elementClass 集合元素的Class对象
+     * @return            解析后的List集合，如果解析失败则返回空列表
+     */
     public static <T> List<T> toList(String json, Class<T> elementClass) {
         return toList(json, List.class, elementClass);
     }
 
+    /**
+     * 解析JSON字符串为指定类型的集合
+     *
+     * @param <T>             集合元素类型
+     * @param json            JSON字符串
+     * @param collectionClass 集合类的Class对象
+     * @param elementClass    集合元素的Class对象
+     * @return               解析后的List集合，如果解析失败则返回空列表
+     */
     public static <T> List<T> toList(String json, Class<? extends List> collectionClass, Class<T> elementClass) {
         if (StringUtil.isEmpty(json) || elementClass == null) {
             return Collections.emptyList();
@@ -99,20 +129,45 @@ public class JsonUtil<T> {
             JavaType javaType = objectMapper.getTypeFactory().constructCollectionType(collectionClass, elementClass);
             return objectMapper.readValue(json, javaType);
         } catch (Exception e) {
-            logger.error("parse json：{} --> list:{},element:{},异常", json, collectionClass.getName(), elementClass.getName(), e);
+            logger.error("parse json：{} --> list:{},element:{},异常", json, collectionClass.getName(),
+                    elementClass.getName(), e);
             return Collections.emptyList();
         }
     }
 
+    /**
+     * 解析JSON字符串为Map&lt;Object,Object&gt;
+     *
+     * @param json JSON字符串
+     * @return    解析后的Map对象，如果解析失败则返回空Map
+     */
     public static Map<Object, Object> toMap(String json) {
         return toMap(json, Map.class, null, null);
     }
 
+    /**
+     * 解析JSON字符串为Map&lt;String,Object&gt;
+     *
+     * @param json JSON字符串
+     * @return    解析后的Map对象，如果解析失败则返回空Map
+     */
     public static Map<String, Object> toStrKeyMap(String json) {
         return toMap(json, Map.class, String.class, Object.class);
     }
 
-    public static <K, V> Map<K, V> toMap(String json, Class<? extends Map> mapClass, Class<K> keyClass, Class<V> valueClass) {
+    /**
+     * 解析JSON字符串为指定类型的Map
+     *
+     * @param <K>        Map键的类型
+     * @param <V>        Map值的类型
+     * @param json       JSON字符串
+     * @param mapClass   Map实现类的Class对象
+     * @param keyClass   Map键类型的Class对象
+     * @param valueClass Map值类型的Class对象
+     * @return          解析后的Map对象，如果解析失败则返回空Map
+     */
+    public static <K, V> Map<K, V> toMap(String json, Class<? extends Map> mapClass, Class<K> keyClass,
+                                        Class<V> valueClass) {
         if (StringUtil.isEmpty(json) || mapClass == null) {
             return new HashMap<>();
         }

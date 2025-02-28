@@ -1,15 +1,17 @@
 package com.suxiaoshuai.util.file;
 
-import com.suxiaoshuai.constants.DateFormConstant;
+import com.suxiaoshuai.constants.DatePatternConstant;
 import com.suxiaoshuai.constants.FileConstant;
 import com.suxiaoshuai.exception.SxsToolsException;
 import com.suxiaoshuai.util.charset.CharsetUtil;
 import com.suxiaoshuai.util.date.DateUtil;
 import com.suxiaoshuai.util.string.StringUtil;
-import org.apache.commons.compress.utils.IOUtils;
+import org.apache.commons.io.IOUtils;
 import org.apache.tools.zip.ZipEntry;
 import org.apache.tools.zip.ZipFile;
 import org.apache.tools.zip.ZipOutputStream;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.*;
 import java.util.ArrayList;
@@ -18,19 +20,28 @@ import java.util.Enumeration;
 import java.util.List;
 
 /**
- * Created by Han on 2017/9/14.
+ * ZIP 文件压缩和解压工具类
+ * 
+ * @author sxs
  */
 public class ZipUtil {
+    /** 日志记录器 */
+    private static final Logger logger = LoggerFactory.getLogger(ZipUtil.class);
 
+    /** ZIP 文件后缀 */
     private static final String ZIP_FILE = FileConstant.FILE_NAME_SEPARATOR + FileConstant.FILE_SUFFIX_ZIP;
 
-    /**
-     * 文件读取缓冲区大小
-     */
+    /** 文件读取缓冲区大小 */
     private static final int CACHE_SIZE = 1024;
 
     /**
-     * 将存放在sourceFilePath目录下的源文件，打包成fileName名称的zip文件，并存放到zipFilePath路径下
+     * 将指定目录下的文件打包成 ZIP 文件
+     *
+     * @param sourcePath 源文件目录路径
+     * @param zipPath    压缩文件保存路径
+     * @param fileName   压缩文件名（不含后缀），如果为空则使用当前时间戳
+     * @param charSet    字符编码，如果为空则使用 UTF-8
+     * @throws SxsToolsException 当源路径或目标路径为空，或目标路径在源路径下时抛出异常
      */
     public static void zip(String sourcePath, String zipPath, String fileName, String charSet) {
         FileOutputStream fos = null;
@@ -42,18 +53,23 @@ public class ZipUtil {
             if (zipPath.contains(sourcePath)) {
                 throw new SxsToolsException("生成的zip文件路径在待压缩文件目录下,无法完成压缩操作");
             }
-            fileName = StringUtil.isBlank(fileName) ? DateUtil.formatDate(new Date(), DateFormConstant.YYYYMMDDHHMMSS) : fileName;
+            fileName = StringUtil.isBlank(fileName)
+                    ? DateUtil.formatDate(new Date(), DatePatternConstant.PURE_DATETIME_PATTERN)
+                    : fileName;
             File targetFileDirectory = new File(zipPath);
             if (!targetFileDirectory.exists()) {
                 targetFileDirectory.mkdirs();
             }
             File[] files = targetFileDirectory.listFiles();
-            for (File file : files) {
-                String name = file.getName();
-                name = name.substring(0, name.lastIndexOf(".") == -1 ? name.length() : name.lastIndexOf("."));
-                if (fileName.equalsIgnoreCase(name)) {
-                    fileName = fileName + "_" + DateUtil.formatDate(new Date(), DateFormConstant.YYYYMMDDHHMMSS);
-                    break;
+            if (files != null) {
+                for (File file : files) {
+                    String name = file.getName();
+                    name = name.substring(0, name.lastIndexOf(".") == -1 ? name.length() : name.lastIndexOf("."));
+                    if (fileName.equalsIgnoreCase(name)) {
+                        fileName = fileName + "_"
+                                + DateUtil.formatDate(new Date(), DatePatternConstant.PURE_DATETIME_PATTERN);
+                        break;
+                    }
                 }
             }
             fos = new FileOutputStream(zipPath + File.separator + fileName + ZIP_FILE);
@@ -61,56 +77,67 @@ public class ZipUtil {
             if (StringUtil.isBlank(charSet)) {
                 charSet = CharsetUtil.UTF_8;
             }
-            zos.setEncoding(charSet);//此处修改字节码方式。
+            zos.setEncoding(charSet);// 此处修改字节码方式。
             writeZip(new File(sourcePath), "", zos);
-        } catch (FileNotFoundException e) {
-// TODO 收拾收拾
-            System.out.println(e);
         } catch (Exception e) {
-
+            logger.error("zip source:{},zipPath:{},name:{} error", sourcePath, zipPath, fileName, e);
         } finally {
             try {
                 if (zos != null) {
                     zos.close();
                 }
             } catch (IOException e) {
-            }
-
-        }
-    }
-
-    private static void writeZip(File file, String parentPath, ZipOutputStream zos) throws IOException {
-        if (file.exists()) {
-            if (file.isDirectory()) {//处理文件夹
-                parentPath += file.getName() + File.separator;
-                File[] files = file.listFiles();
-                if (files.length != 0) {
-                    for (File f : files) {
-                        writeZip(f, parentPath, zos);
-                    }
-                } else {       //空目录则创建当前目录
-                    zos.putNextEntry(new ZipEntry(parentPath));
-                }
-            } else {
-                try (FileInputStream fis = new FileInputStream(file)) {
-                    ZipEntry ze = new ZipEntry(parentPath + file.getName());
-                    zos.putNextEntry(ze);
-                    byte[] content = new byte[CACHE_SIZE];
-                    int len;
-                    while ((len = fis.read(content)) != -1) {
-                        zos.write(content, 0, len);
-                        zos.flush();
-                    }
-
-                } catch (FileNotFoundException e) {
-                } catch (IOException e) {
-                }
+                logger.error("close zos error", e);
             }
         }
     }
 
     /**
-     * 解压zip文件
+     * 递归压缩文件或目录
+     *
+     * @param file       待压缩的文件或目录
+     * @param parentPath 父级目录路径
+     * @param zos        ZIP 输出流
+     * @throws IOException IO异常
+     */
+    private static void writeZip(File file, String parentPath, ZipOutputStream zos) throws IOException {
+        if (!file.exists()) {
+            return;
+        }
+        if (file.isDirectory()) {// 处理文件夹
+            parentPath += file.getName() + File.separator;
+            File[] files = file.listFiles();
+            // 空目录则创建当前目录
+            if (files != null) {
+                for (File f : files) {
+                    writeZip(f, parentPath, zos);
+                }
+            }
+        } else {
+            try (FileInputStream fis = new FileInputStream(file)) {
+                ZipEntry ze = new ZipEntry(parentPath + file.getName());
+                zos.putNextEntry(ze);
+                byte[] content = new byte[CACHE_SIZE];
+                int len;
+                while ((len = fis.read(content)) != -1) {
+                    zos.write(content, 0, len);
+                    zos.flush();
+                }
+
+            } catch (Exception e) {
+                logger.error("write zip file error:{}", file.getAbsolutePath(), e);
+            }
+        }
+    }
+
+    /**
+     * 解压 ZIP 文件到指定目录
+     *
+     * @param zipFilePath    待解压的 ZIP 文件
+     * @param targetFilePath 解压目标目录
+     * @param charset        字符编码，如果为空则使用 UTF-8
+     * @return 解压后的文件列表
+     * @throws Exception 当 ZIP 文件不存在或目标路径为空时抛出异常
      */
     public static List<File> unzip(File zipFilePath, String targetFilePath, String charset) throws Exception {
         if (zipFilePath == null || !zipFilePath.exists()) {

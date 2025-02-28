@@ -6,7 +6,7 @@ package com.suxiaoshuai.util.system;
  */
 public class RuntimeInfo {
 
-    private Runtime currentRuntime = Runtime.getRuntime();
+    private final Runtime currentRuntime = Runtime.getRuntime();
 
     /**
      * 获得运行时对象

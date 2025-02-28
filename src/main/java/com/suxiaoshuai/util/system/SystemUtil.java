@@ -7,11 +7,11 @@ import java.lang.management.ManagementFactory;
 import java.util.Properties;
 
 /**
- * @author sxs
+ * 系统工具类
+ * 提供系统属性获取、环境信息查询等功能
  */
 public final class SystemUtil {
 
-    /***** Java运行时环境信息 *****/
     /**
      * Java 运行时环境规范名称
      */
@@ -179,6 +179,13 @@ public final class SystemUtil {
     /**
      * 获得boolean类型值
      */
+    /**
+     * 获取系统布尔类型属性值
+     *
+     * @param key          属性键名
+     * @param defaultValue 默认值
+     * @return 如果属性存在且值为 true/yes/1 返回true，如果值为 false/no/0 返回false，其他情况返回默认值
+     */
     public static boolean getBoolean(String key, boolean defaultValue) {
         String value = get(key);
         if (value == null) {
@@ -202,7 +209,9 @@ public final class SystemUtil {
     }
 
     /**
-     * @return 属性列表
+     * 获取所有系统属性
+     *
+     * @return 系统属性对象
      */
     public static Properties props() {
         return System.getProperties();

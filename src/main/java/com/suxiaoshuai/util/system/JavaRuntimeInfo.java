@@ -3,44 +3,64 @@ package com.suxiaoshuai.util.system;
 
 /**
  * 代表当前运行的JRE的信息。
+ * 提供对JRE系统属性的访问功能。
+ *
  * @author sxs
  */
 public class JavaRuntimeInfo {
 
+    /** JRE名称 */
     private final String JAVA_RUNTIME_NAME = SystemUtil.get("java.runtime.name", false);
+    
+    /** JRE版本 */
     private final String JAVA_RUNTIME_VERSION = SystemUtil.get("java.runtime.version", false);
+    
+    /** Java安装目录 */
     private final String JAVA_HOME = SystemUtil.get("java.home", false);
+    
+    /** Java扩展目录 */
     private final String JAVA_EXT_DIRS = SystemUtil.get("java.ext.dirs", false);
+    
+    /** Java信任目录 */
     private final String JAVA_ENDORSED_DIRS = SystemUtil.get("java.endorsed.dirs", false);
+    
+    /** Java类路径 */
     private final String JAVA_CLASS_PATH = SystemUtil.get("java.class.path", false);
+    
+    /** Java类版本 */
     private final String JAVA_CLASS_VERSION = SystemUtil.get("java.class.version", false);
+    
+    /** Java库路径 */
     private final String JAVA_LIBRARY_PATH = SystemUtil.get("java.library.path", false);
 
+    /** Java启动类路径 */
     private final String SUN_BOOT_CLASS_PATH = SystemUtil.get("sun.boot.class.path", false);
 
+    /** JVM数据模型（32位或64位） */
     private final String SUN_ARCH_DATA_MODEL = SystemUtil.get("sun.arch.data.model", false);
 
+    /**
+     * 获取JVM启动类路径
+     *
+     * @return 启动类路径，如果不能获取则返回null
+     */
     public final String getSunBoothClassPath() {
         return SUN_BOOT_CLASS_PATH;
     }
 
     /**
-     * JVM is 32M <code>or</code> 64M
+     * 获取JVM数据模型
      *
-     * @return 32 <code>or</code> 64
+     * @return "32"表示32位JVM，"64"表示64位JVM
      */
     public final String getSunArchDataModel() {
         return SUN_ARCH_DATA_MODEL;
     }
 
     /**
-     * 取得当前JRE的名称（取自系统属性：<code>java.runtime.name</code>）。
-     * <p>
-     * <p>
-     * 例如Sun JDK 1.4.2： <code>"Java(TM) 2 Runtime Environment, Standard Edition"</code>
-     * </p>
+     * 获取当前JRE的名称
      *
-     * @return 属性值，如果不能取得（因为Java安全限制）或值不存在，则返回<code>null</code>。
+     * @return JRE名称，例如：<code>"Java(TM) 2 Runtime Environment, Standard Edition"</code>
      * @since Java 1.3
      */
     public final String getName() {
@@ -48,13 +68,9 @@ public class JavaRuntimeInfo {
     }
 
     /**
-     * 取得当前JRE的版本（取自系统属性：<code>java.runtime.version</code>）。
-     * <p>
-     * <p>
-     * 例如Sun JDK 1.4.2：<code>"1.4.2-b28"</code>
-     * </p>
+     * 获取当前JRE的版本
      *
-     * @return 属性值，如果不能取得（因为Java安全限制）或值不存在，则返回<code>null</code>。
+     * @return JRE版本，例如：<code>"1.4.2-b28"</code>
      * @since Java 1.3
      */
     public final String getVersion() {
@@ -63,10 +79,8 @@ public class JavaRuntimeInfo {
 
     /**
      * 取得当前JRE的安装目录（取自系统属性：<code>java.home</code>）。
-     * <p>
-     * <p>
+     *
      * 例如Sun JDK 1.4.2：<code>"/opt/jdk1.4.2/jre"</code>
-     * </p>
      *
      * @return 属性值，如果不能取得（因为Java安全限制）或值不存在，则返回<code>null</code>。
      * @since Java 1.1
@@ -77,10 +91,8 @@ public class JavaRuntimeInfo {
 
     /**
      * 取得当前JRE的扩展目录列表（取自系统属性：<code>java.ext.dirs</code>）。
-     * <p>
-     * <p>
+     *
      * 例如Sun JDK 1.4.2：<code>"/opt/jdk1.4.2/jre/lib/ext:..."</code>
-     * </p>
      *
      * @return 属性值，如果不能取得（因为Java安全限制）或值不存在，则返回<code>null</code>。
      * @since Java 1.3
@@ -91,10 +103,8 @@ public class JavaRuntimeInfo {
 
     /**
      * 取得当前JRE的endorsed目录列表（取自系统属性：<code>java.endorsed.dirs</code>）。
-     * <p>
-     * <p>
+     *
      * 例如Sun JDK 1.4.2：<code>"/opt/jdk1.4.2/jre/lib/endorsed:..."</code>
-     * </p>
      *
      * @return 属性值，如果不能取得（因为Java安全限制）或值不存在，则返回<code>null</code>。
      * @since Java 1.4
@@ -105,10 +115,8 @@ public class JavaRuntimeInfo {
 
     /**
      * 取得当前JRE的系统classpath（取自系统属性：<code>java.class.path</code>）。
-     * <p>
-     * <p>
+     *
      * 例如：<code>"/home/admin/myclasses:/home/admin/..."</code>
-     * </p>
      *
      * @return 属性值，如果不能取得（因为Java安全限制）或值不存在，则返回<code>null</code>。
      * @since Java 1.1
@@ -118,25 +126,9 @@ public class JavaRuntimeInfo {
     }
 
     /**
-     * 取得当前JRE的系统classpath（取自系统属性：<code>java.class.path</code>）。
-     * <p>
-     * <p>
-     * 例如：<code>"/home/admin/myclasses:/home/admin/..."</code>
-     * </p>
-     *
-     * @return 属性值，如果不能取得（因为Java安全限制）或值不存在，则返回<code>null</code>。
-     * @since Java 1.1
-     */
-   /* public final String[] getClassPathArray() {
-        return StrUtil.split(getClassPath(), SystemUtil.get("path.separator", false));
-    }*/
-
-    /**
      * 取得当前JRE的class文件格式的版本（取自系统属性：<code>java.class.version</code>）。
-     * <p>
-     * <p>
+     *
      * 例如Sun JDK 1.4.2：<code>"48.0"</code>
-     * </p>
      *
      * @return 属性值，如果不能取得（因为Java安全限制）或值不存在，则返回<code>null</code>。
      * @since Java 1.1
@@ -147,10 +139,8 @@ public class JavaRuntimeInfo {
 
     /**
      * 取得当前JRE的library搜索路径（取自系统属性：<code>java.library.path</code>）。
-     * <p>
-     * <p>
+     *
      * 例如Sun JDK 1.4.2：<code>"/opt/jdk1.4.2/bin:..."</code>
-     * </p>
      *
      * @return 属性值，如果不能取得（因为Java安全限制）或值不存在，则返回<code>null</code>。
      */
@@ -158,25 +148,19 @@ public class JavaRuntimeInfo {
         return JAVA_LIBRARY_PATH;
     }
 
-    /**
-     * 取得当前JRE的library搜索路径（取自系统属性：<code>java.library.path</code>）。
-     * <p>
-     * <p>
-     * 例如Sun JDK 1.4.2：<code>"/opt/jdk1.4.2/bin:..."</code>
-     * </p>
-     *
-     * @return 属性值，如果不能取得（因为Java安全限制）或值不存在，则返回<code>null</code>。
+    /*
+      取得当前JRE的library搜索路径（取自系统属性：<code>java.library.path</code>）。
+      例如Sun JDK 1.4.2：<code>"/opt/jdk1.4.2/bin:..."</code>
+
+      @return 属性值，如果不能取得（因为Java安全限制）或值不存在，则返回<code>null</code>。
      */
     /*public final String[] getLibraryPathArray() {
         return StrUtil.split(getLibraryPath(), SystemUtil.get("path.separator", false));
     }*/
 
     /**
-     * 取得当前JRE的URL协议packages列表（取自系统属性：<code>java.library.path</code>）。
-     * <p>
-     * <p>
+     * 取得当前JRE的URL协议packages列表（取自系统属性：<code>java.protocol.handler.pkgs</code>）。
      * 例如Sun JDK 1.4.2：<code>"sun.net.www.protocol|..."</code>
-     * </p>
      *
      * @return 属性值，如果不能取得（因为Java安全限制）或值不存在，则返回<code>null</code>。
      */
@@ -191,18 +175,15 @@ public class JavaRuntimeInfo {
      */
     @Override
     public final String toString() {
-        StringBuilder builder = new StringBuilder();
 
-        builder.append("Java Runtime Name:      " + getName());
-        builder.append("Java Runtime Version:   " + getVersion());
-        builder.append("Java Home Dir:          " + getHomeDir());
-        builder.append("Java Extension Dirs:    " + getExtDirs());
-        builder.append("Java Endorsed Dirs:     " + getEndorsedDirs());
-        builder.append("Java Class Path:        " + getClassPath());
-        builder.append("Java Class Version:     " + getClassVersion());
-        builder.append("Java Library Path:      " + getLibraryPath());
-        builder.append("Java Protocol Packages: " + getProtocolPackages());
-
-        return builder.toString();
+        return "Java Runtime Name:      " + getName() + "\n" +
+                "Java Runtime Version:   " + getVersion() + "\n" +
+                "Java Home Dir:          " + getHomeDir() + "\n" +
+                "Java Extension Dirs:    " + getExtDirs() + "\n" +
+                "Java Endorsed Dirs:     " + getEndorsedDirs() + "\n" +
+                "Java Class Path:        " + getClassPath() + "\n" +
+                "Java Class Version:     " + getClassVersion() + "\n" +
+                "Java Library Path:      " + getLibraryPath() + "\n" +
+                "Java Protocol Packages: " + getProtocolPackages();
     }
 }

@@ -1,36 +1,36 @@
 # sxs-tools
 
-#### Description
-{**When you're done, you can delete the content in this README and update the file with details for others getting started with your repository**}
+## Introduction
+sxs-tools is a Java utility library that provides a series of commonly used tool classes to simplify common operations in daily development.
 
-#### Software Architecture
-Software architecture description
+## Main Features
+- Amount Processing Tools
+  - Support Chinese uppercase amount conversion
+  - Support amount formatting (thousands separator)
+  - Support lowercase amount conversion
+  - Maximum supported amount: 99999999999999999.99
 
-#### Installation
+- String Utils
+  - String formatting
+  - Null value checking
+  - String conversion
 
-1.  xxxx
-2.  xxxx
-3.  xxxx
+- Security Tools
+  - RSA encryption and decryption
+  - XSS protection
+  - Data security processing
+- ...
 
-#### Instructions
+## Requirements
+- JDK 17 or above
+- Maven 3.0 or above
 
-1.  xxxx
-2.  xxxx
-3.  xxxx
-
-#### Contribution
-
-1.  Fork the repository
-2.  Create Feat_xxx branch
-3.  Commit your code
-4.  Create Pull Request
-
-
-#### Gitee Feature
-
-1.  You can use Readme\_XXX.md to support different languages, such as Readme\_en.md, Readme\_zh.md
-2.  Gitee blog [blog.gitee.com](https://blog.gitee.com)
-3.  Explore open source project [https://gitee.com/explore](https://gitee.com/explore)
-4.  The most valuable open source project [GVP](https://gitee.com/gvp)
-5.  The manual of Gitee [https://gitee.com/help](https://gitee.com/help)
-6.  The most popular members  [https://gitee.com/gitee-stars/](https://gitee.com/gitee-stars/)
+## Quick Start
+1. Add dependency
+```xml
+<dependency>
+    <groupId>com.suxiaoshuai</groupId>
+    <artifactId>sxs-tools</artifactId>
+    <version>1.0.0</version>
+</dependency>
+```

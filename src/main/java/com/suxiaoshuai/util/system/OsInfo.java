@@ -2,11 +2,16 @@ package com.suxiaoshuai.util.system;
 
 /**
  * 代表当前OS的信息。
+ * 提供了操作系统类型判断、系统属性获取等功能。
  */
 public class OsInfo {
-
+    /** 操作系统版本 */
     private final String OS_VERSION = SystemUtil.get("os.version", false);
+
+    /** 操作系统架构 */
     private final String OS_ARCH = SystemUtil.get("os.arch", false);
+
+    /** 操作系统名称 */
     private final String OS_NAME = SystemUtil.get("os.name", false);
     private final boolean IS_OS_AIX = getOSMatches("AIX");
     private final boolean IS_OS_HP_UX = getOSMatches("HP-UX");
@@ -32,12 +37,10 @@ public class OsInfo {
 
     /**
      * 取得当前OS的架构（取自系统属性：<code>os.arch</code>）。
-     * <p>
-     * <p>
-     * 例如：<code>"x86"</code>
-     * </p>
      *
-     * @return 属性值，如果不能取得（因为Java安全限制）或值不存在，则返回<code>null</code>。
+     * 例如：<code>"x86"</code>
+     *
+     * @return 属性值，如果不能取得（因为Java安全限制）或值不存在，则返回<code>null</code>
      * @since Java 1.1
      */
     public final String getArch() {
@@ -45,39 +48,9 @@ public class OsInfo {
     }
 
     /**
-     * 取得当前OS的名称（取自系统属性：<code>os.name</code>）。
-     * <p>
-     * <p>
-     * 例如：<code>"Windows XP"</code>
-     * </p>
-     *
-     * @return 属性值，如果不能取得（因为Java安全限制）或值不存在，则返回<code>null</code>。
-     * @since Java 1.1
-     */
-    public final String getName() {
-        return OS_NAME;
-    }
-
-    /**
-     * 取得当前OS的版本（取自系统属性：<code>os.version</code>）。
-     * <p>
-     * <p>
-     * 例如：<code>"5.1"</code>
-     * </p>
-     *
-     * @return 属性值，如果不能取得（因为Java安全限制）或值不存在，则返回<code>null</code>。
-     * @since Java 1.1
-     */
-    public final String getVersion() {
-        return OS_VERSION;
-    }
-
-    /**
      * 判断当前OS的类型。
-     * <p>
-     * <p>
+     *
      * 如果不能取得系统属性<code>os.name</code>（因为Java安全限制），则总是返回<code>false</code>
-     * </p>
      *
      * @return 如果当前OS类型为AIX，则返回<code>true</code>
      */
@@ -87,10 +60,8 @@ public class OsInfo {
 
     /**
      * 判断当前OS的类型。
-     * <p>
-     * <p>
+     *
      * 如果不能取得系统属性<code>os.name</code>（因为Java安全限制），则总是返回<code>false</code>
-     * </p>
      *
      * @return 如果当前OS类型为HP-UX，则返回<code>true</code>
      */
@@ -100,10 +71,8 @@ public class OsInfo {
 
     /**
      * 判断当前OS的类型。
-     * <p>
-     * <p>
+     *
      * 如果不能取得系统属性<code>os.name</code>（因为Java安全限制），则总是返回<code>false</code>
-     * </p>
      *
      * @return 如果当前OS类型为IRIX，则返回<code>true</code>
      */
@@ -113,10 +82,8 @@ public class OsInfo {
 
     /**
      * 判断当前OS的类型。
-     * <p>
-     * <p>
+     *
      * 如果不能取得系统属性<code>os.name</code>（因为Java安全限制），则总是返回<code>false</code>
-     * </p>
      *
      * @return 如果当前OS类型为Linux，则返回<code>true</code>
      */
@@ -126,10 +93,8 @@ public class OsInfo {
 
     /**
      * 判断当前OS的类型。
-     * <p>
-     * <p>
+     *
      * 如果不能取得系统属性<code>os.name</code>（因为Java安全限制），则总是返回<code>false</code>
-     * </p>
      *
      * @return 如果当前OS类型为Mac，则返回<code>true</code>
      */
@@ -139,10 +104,8 @@ public class OsInfo {
 
     /**
      * 判断当前OS的类型。
-     * <p>
-     * <p>
+     *
      * 如果不能取得系统属性<code>os.name</code>（因为Java安全限制），则总是返回<code>false</code>
-     * </p>
      *
      * @return 如果当前OS类型为MacOS X，则返回<code>true</code>
      */
@@ -152,10 +115,8 @@ public class OsInfo {
 
     /**
      * 判断当前OS的类型。
-     * <p>
-     * <p>
+     *
      * 如果不能取得系统属性<code>os.name</code>（因为Java安全限制），则总是返回<code>false</code>
-     * </p>
      *
      * @return 如果当前OS类型为OS2，则返回<code>true</code>
      */
@@ -165,10 +126,8 @@ public class OsInfo {
 
     /**
      * 判断当前OS的类型。
-     * <p>
-     * <p>
+     *
      * 如果不能取得系统属性<code>os.name</code>（因为Java安全限制），则总是返回<code>false</code>
-     * </p>
      *
      * @return 如果当前OS类型为Solaris，则返回<code>true</code>
      */
@@ -178,10 +137,8 @@ public class OsInfo {
 
     /**
      * 判断当前OS的类型。
-     * <p>
-     * <p>
+     *
      * 如果不能取得系统属性<code>os.name</code>（因为Java安全限制），则总是返回<code>false</code>
-     * </p>
      *
      * @return 如果当前OS类型为Sun OS，则返回<code>true</code>
      */
@@ -191,10 +148,8 @@ public class OsInfo {
 
     /**
      * 判断当前OS的类型。
-     * <p>
-     * <p>
+     *
      * 如果不能取得系统属性<code>os.name</code>（因为Java安全限制），则总是返回<code>false</code>
-     * </p>
      *
      * @return 如果当前OS类型为Windows，则返回<code>true</code>
      */
@@ -204,10 +159,8 @@ public class OsInfo {
 
     /**
      * 判断当前OS的类型。
-     * <p>
-     * <p>
+     *
      * 如果不能取得系统属性<code>os.name</code>（因为Java安全限制），则总是返回<code>false</code>
-     * </p>
      *
      * @return 如果当前OS类型为Windows 2000，则返回<code>true</code>
      */
@@ -217,10 +170,8 @@ public class OsInfo {
 
     /**
      * 判断当前OS的类型。
-     * <p>
-     * <p>
+     *
      * 如果不能取得系统属性<code>os.name</code>（因为Java安全限制），则总是返回<code>false</code>
-     * </p>
      *
      * @return 如果当前OS类型为Windows 95，则返回<code>true</code>
      */
@@ -230,10 +181,8 @@ public class OsInfo {
 
     /**
      * 判断当前OS的类型。
-     * <p>
-     * <p>
+     *
      * 如果不能取得系统属性<code>os.name</code>（因为Java安全限制），则总是返回<code>false</code>
-     * </p>
      *
      * @return 如果当前OS类型为Windows 98，则返回<code>true</code>
      */
@@ -243,10 +192,8 @@ public class OsInfo {
 
     /**
      * 判断当前OS的类型。
-     * <p>
-     * <p>
+     *
      * 如果不能取得系统属性<code>os.name</code>（因为Java安全限制），则总是返回<code>false</code>
-     * </p>
      *
      * @return 如果当前OS类型为Windows ME，则返回<code>true</code>
      */
@@ -256,10 +203,8 @@ public class OsInfo {
 
     /**
      * 判断当前OS的类型。
-     * <p>
-     * <p>
+     *
      * 如果不能取得系统属性<code>os.name</code>（因为Java安全限制），则总是返回<code>false</code>
-     * </p>
      *
      * @return 如果当前OS类型为Windows NT，则返回<code>true</code>
      */
@@ -269,10 +214,8 @@ public class OsInfo {
 
     /**
      * 判断当前OS的类型。
-     * <p>
-     * <p>
+     *
      * 如果不能取得系统属性<code>os.name</code>（因为Java安全限制），则总是返回<code>false</code>
-     * </p>
      *
      * @return 如果当前OS类型为Windows XP，则返回<code>true</code>
      */
@@ -311,12 +254,10 @@ public class OsInfo {
 
     /**
      * 取得OS的文件路径的分隔符（取自系统属性：<code>file.separator</code>）。
-     * <p>
-     * <p>
-     * 例如：Unix为<code>"/"</code>，Windows为<code>"\\"</code>。
-     * </p>
      *
-     * @return 属性值，如果不能取得（因为Java安全限制）或值不存在，则返回<code>null</code>。
+     * 例如：Unix为<code>"/"</code>，Windows为<code>"\\"</code>。
+     *
+     * @return 属性值，如果不能取得（因为Java安全限制）或值不存在，则返回<code>null</code>
      * @since Java 1.1
      */
     public final String getFileSeparator() {
@@ -325,12 +266,10 @@ public class OsInfo {
 
     /**
      * 取得OS的文本文件换行符（取自系统属性：<code>line.separator</code>）。
-     * <p>
-     * <p>
-     * 例如：Unix为<code>"\n"</code>，Windows为<code>"\r\n"</code>。
-     * </p>
      *
-     * @return 属性值，如果不能取得（因为Java安全限制）或值不存在，则返回<code>null</code>。
+     * 例如：Unix为<code>"\n"</code>，Windows为<code>"\r\n"</code>。
+     *
+     * @return 属性值，如果不能取得（因为Java安全限制）或值不存在，则返回<code>null</code>
      * @since Java 1.1
      */
     public final String getLineSeparator() {
@@ -339,16 +278,38 @@ public class OsInfo {
 
     /**
      * 取得OS的搜索路径分隔符（取自系统属性：<code>path.separator</code>）。
-     * <p>
-     * <p>
-     * 例如：Unix为<code>":"</code>，Windows为<code>";"</code>。
-     * </p>
      *
-     * @return 属性值，如果不能取得（因为Java安全限制）或值不存在，则返回<code>null</code>。
+     * 例如：Unix为<code>":"</code>，Windows为<code>";"</code>。
+     *
+     * @return 属性值，如果不能取得（因为Java安全限制）或值不存在，则返回<code>null</code>
      * @since Java 1.1
      */
     public final String getPathSeparator() {
         return PATH_SEPARATOR;
+    }
+
+    /**
+     * 取得当前OS的名称（取自系统属性：<code>os.name</code>）。
+     *
+     * 例如：<code>"Windows XP"</code>、<code>"Linux"</code>
+     *
+     * @return 属性值，如果不能取得（因为Java安全限制）或值不存在，则返回<code>null</code>
+     * @since Java 1.1
+     */
+    public final String getName() {
+        return OS_NAME;
+    }
+
+    /**
+     * 取得当前OS的版本（取自系统属性：<code>os.version</code>）。
+     *
+     * 例如：<code>"5.1"</code>、<code>"2.6.32"</code>
+     *
+     * @return 属性值，如果不能取得（因为Java安全限制）或值不存在，则返回<code>null</code>
+     * @since Java 1.1
+     */
+    public final String getVersion() {
+        return OS_VERSION;
     }
 
     /**
@@ -358,16 +319,12 @@ public class OsInfo {
      */
     @Override
     public final String toString() {
-        StringBuilder builder = new StringBuilder();
 
-        builder.append("OS Arch:        " + getArch());
-        builder.append("OS Name:        " + getName());
-        builder.append("OS Version:     " + getVersion());
-        builder.append("File Separator: " + getFileSeparator());
-        builder.append("Line Separator: " + getLineSeparator());
-        builder.append("Path Separator: " + getPathSeparator());
-
-        return builder.toString();
+        return "OS Arch:        " + getArch() + "\n" +
+                "OS Name:        " + getName() + "\n" +
+                "OS Version:     " + getVersion() + "\n" +
+                "File Separator: " + getFileSeparator() + "\n" +
+                "Line Separator: " + getLineSeparator() + "\n" +
+                "Path Separator: " + getPathSeparator();
     }
-
 }
