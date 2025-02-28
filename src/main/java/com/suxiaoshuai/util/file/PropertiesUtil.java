@@ -1,8 +1,15 @@
 package com.suxiaoshuai.util.file;
 
 
-import java.io.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.io.FileOutputStream;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
@@ -11,14 +18,22 @@ import java.util.Set;
  * properties文件工具类
  *
  * @author sxs
- * @date 2017/4/7
  */
 public class PropertiesUtil {
 
-//    private final static Logger logger = LoggerFactory.getLogger(PropertiesUtil.class);
+    /**
+     * 日志记录器
+     */
+    private static final Logger logger = LoggerFactory.getLogger(PropertiesUtil.class);
 
+    /**
+     * 文件路径分隔符
+     */
     public static final String FILE_PATH_SPLIT_FLAG = "/";
 
+    /**
+     * 私有构造函数，防止实例化
+     */
     private PropertiesUtil() {
     }
 
@@ -28,6 +43,7 @@ public class PropertiesUtil {
      * @param originPropName    原始文件名
      * @param targetPropName    目标文件名
      * @param filePathSplitFlag 文件路径分隔符
+     * @throws RuntimeException 如果复制过程中发生IO异常
      */
     public static void copyProperties(String originPropName, String targetPropName, String filePathSplitFlag) {
         Properties originProperties = getClassPathProperties(originPropName, filePathSplitFlag);
@@ -35,15 +51,16 @@ public class PropertiesUtil {
         OutputStream outputStream = getClassPathFileOutputStream(targetPropName, filePathSplitFlag);
 
         try {
-            //将原始properties内的内容放在目标properties中
+            // 将原始properties内的内容放在目标properties中
             Set<Map.Entry<Object, Object>> entries = originProperties.entrySet();
             for (Map.Entry<Object, Object> entry : entries) {
                 String key = String.valueOf(entry.getKey());
                 targetProperties.put(key, String.valueOf(entry.getValue()));
             }
-            //写入文件内
+            // 写入文件内
             targetProperties.store(outputStream, "application copy from runtime");
-        } catch (IOException e) {
+        } catch (Exception e) {
+            logger.error("copy properties error", e);
             throw new RuntimeException(e);
         }
     }
@@ -51,16 +68,18 @@ public class PropertiesUtil {
     /**
      * 根据文件名加载classpath路径下的properties文件
      *
-     * @param fileName
-     * @param filePathSplitFlag
-     * @return
+     * @param fileName          properties文件名
+     * @param filePathSplitFlag 文件路径分隔符
+     * @return 加载的Properties对象
+     * @throws RuntimeException 如果加载过程中发生异常
      */
     public static Properties getClassPathProperties(String fileName, String filePathSplitFlag) {
         Properties runtimeProperties = new Properties();
         try {
             InputStream inputStream = getClassPathFileInputStream(fileName, filePathSplitFlag);
-            runtimeProperties.load(new InputStreamReader(inputStream, "utf-8"));
+            runtimeProperties.load(new InputStreamReader(inputStream, StandardCharsets.UTF_8));
         } catch (Exception e) {
+            logger.error("get classpath properties error", e);
             throw new RuntimeException(e);
         }
         return runtimeProperties;
@@ -71,27 +90,30 @@ public class PropertiesUtil {
      *
      * @param fileName          properties文件名
      * @param filePathSplitFlag 路径分隔符用以获得classpath下路径
-     * @return
+     * @return properties文件的输入流
      */
     private static InputStream getClassPathFileInputStream(String fileName, String filePathSplitFlag) {
         return PropertiesUtil.class.getResourceAsStream(filePathSplitFlag + fileName);
     }
 
     /**
-     * 根据文件名获取classpath下的properties文件对应的输出流用以将内容输出此文件内
+     * 根据文件名获取classpath下的properties文件对应的输出流
      *
      * @param fileName          properties文件名
      * @param filePathSplitFlag 路径分隔符用以获得classpath
-     * @return
+     * @return properties文件的输出流，如果文件不存在则返回null
+     * @throws RuntimeException 如果获取输出流过程中发生异常
      */
     private static OutputStream getClassPathFileOutputStream(String fileName, String filePathSplitFlag) {
 
         try {
             URL resource = PropertiesUtil.class.getClassLoader().getResource(filePathSplitFlag + fileName);
-            FileOutputStream outputStream = new FileOutputStream(resource.getFile());
-            return outputStream;
+            if (resource != null) {
+                return new FileOutputStream(resource.getFile());
+            }
+            return null;
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error("getClassPathFileOutputStream error", e);
             throw new RuntimeException(e);
         }
     }

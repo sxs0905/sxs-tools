@@ -17,10 +17,16 @@ import java.security.cert.X509Certificate;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
+/**
+ * HTTP 请求工具类，基于 OkHttp 实现
+ */
 public class HttpUtils {
 
     private static final Logger logger = LoggerFactory.getLogger(HttpUtils.class);
     private static volatile OkHttpClient okHttpClient = null;
+    /**
+     * HTTP 请求超时时间，单位：秒
+     */
     public static final int TIME_OUT = 60;
 
     static {
@@ -42,14 +48,35 @@ public class HttpUtils {
         }
     }
 
+    /**
+     * 发起get请求
+     *
+     * @param url 请求地址
+     * @return 请求结果
+     */
     public static String get(String url) {
         return get(url, null, null);
     }
 
+    /**
+     * 发起get请求
+     *
+     * @param url       请求地址
+     * @param headerMap 请求头
+     * @return 请求结果
+     */
     public static String get(String url, Map<String, String> headerMap) {
         return get(url, null, headerMap);
     }
 
+    /**
+     * 发起get 请求
+     *
+     * @param url       请求地址
+     * @param paramMap  请求参数
+     * @param headerMap 请求头
+     * @return 请求结果
+     */
     public static String get(String url, Map<String, String> paramMap, Map<String, String> headerMap) {
         logger.info("okhttp get url:{}, paramMap:{}, headerMap:{}", url, paramMap, headerMap);
         String result = null;
@@ -67,10 +94,25 @@ public class HttpUtils {
         return result;
     }
 
+    /**
+     * 发起post请求
+     *
+     * @param url  请求地址
+     * @param json 请求参数
+     * @return 请求结果
+     */
     public static String post(String url, String json) {
         return post(url, json, null);
     }
 
+    /**
+     * 发起post请求，支持自定义请求头
+     *
+     * @param url       请求地址
+     * @param json      请求参数
+     * @param headerMap 请求头
+     * @return 请求结果
+     */
     public static String post(String url, String json, Map<String, String> headerMap) {
         logger.info("okhttp post json url:{}, body:{}, headerMap:{}", url, json, headerMap);
         String result = null;
@@ -86,10 +128,25 @@ public class HttpUtils {
         return result;
     }
 
+    /**
+     * 发起post form请求
+     *
+     * @param url       请求地址
+     * @param paramsMap 请求参数
+     * @return 请求结果
+     */
     public static String postForm(String url, Map<String, String> paramsMap) {
         return postForm(url, paramsMap, null);
     }
 
+    /**
+     * 发起post form请求，支持自定义请求头
+     *
+     * @param url       请求地址
+     * @param paramsMap 参数
+     * @param headerMap 请求头
+     * @return 请求结果
+     */
     public static String postForm(String url, Map<String, String> paramsMap, Map<String, String> headerMap) {
         logger.info("okhttp post form url:{}, body:{}, headerMap:{}", url, paramsMap, headerMap);
         String result = null;
@@ -161,7 +218,10 @@ public class HttpUtils {
 
 
     /**
-     * 生成安全套接字工厂，用于https请求的证书跳过
+     * 生成安全套接字工厂，用于 HTTPS 请求的证书跳过
+     *
+     * @param trustAllCerts 信任管理器数组
+     * @return SSL 套接字工厂
      */
     private static SSLSocketFactory createSSLSocketFactory(TrustManager[] trustAllCerts) {
         SSLSocketFactory ssfFactory = null;
@@ -175,6 +235,11 @@ public class HttpUtils {
         return ssfFactory;
     }
 
+    /**
+     * 构建信任所有证书的信任管理器
+     *
+     * @return 信任管理器数组
+     */
     private static TrustManager[] buildTrustManagers() {
         return new TrustManager[]{
                 new X509TrustManager() {

@@ -1,289 +1,162 @@
 package com.suxiaoshuai.util.security;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.math.BigDecimal;
-import java.text.DecimalFormat;
-import java.text.SimpleDateFormat;
-import java.util.*;
+import java.math.RoundingMode;
 
 /**
- * @author sxs
+ * 格式化工具类
+ *
+ * 提供各种数据格式化操作，包括：
+ * <ul>
+ *     <li>数字格式化（百分比转换）</li>
+ *     <li>字符串处理（截取、大小写转换）</li>
+ *     <li>进制转换（字节数组与十六进制互转）</li>
+ * </ul>
+ *
+ * @author suxiaoshuai
+ * @since 1.0.0
  */
 public final class FormatUtil {
-	/** ==============IS Base=================== */
-	/** 判断是否为整数(包括负数) */
-	public static boolean isNumber(Object arg) {
-		return NumberBo(0, toString(arg));
-	}
 
-	/** 判断是否为小数(包括整数,包括负数) */
-	public static boolean isDecimal(Object arg) {
-		return NumberBo(1, toString(arg));
-	}
 
-	/** 判断是否为空 ,为空返回true */
-	public static boolean isEmpty(Object arg) {
-		return toStringTrim(arg).length() == 0 ? true : false;
-	}
+    private static final Logger logger = LoggerFactory.getLogger(FormatUtil.class);
 
-	/** ==============TO Base=================== */
-	/**
-	 * Object 转换成 Int 转换失败 返回默认值 0 <br>
-	 * 使用:toInt(值,默认值[选填])
-	 */
-	public static int toInt(Object... args) {
-		int def = 0;
-		if (args != null) {
-			String str = toStringTrim(args[0]);
-			// 判断小数情况。舍弃小数位
-			int stri = str.indexOf('.');
-			str = stri > 0 ? str.substring(0, stri) : str;
-			if (args.length > 1)
-				def = Integer.parseInt(args[args.length - 1].toString());
-			if (isNumber(str))
-				return Integer.parseInt(str);
-		}
-		return def;
-	}
+    /**
+     * 小数转百分数
+     *
+     * @param str 需要转换的小数
+     * @return 转换后的百分数字符串，转换失败返回null
+     */
+    public static String toPercent(Double str) {
+        try {
+            return String.valueOf(new BigDecimal(String.valueOf(str)).multiply(new BigDecimal("100")).doubleValue());
+        } catch (Exception e) {
+            return null;
+        }
+    }
 
-	/**
-	 * Object 转换成 Long 转换失败 返回默认值 0 <br>
-	 * 使用:toLong(值,默认值[选填])
-	 */
-	public static long toLong(Object... args) {
-		Long def = 0L;
-		if (args != null) {
-			String str = toStringTrim(args[0]);
-			if (args.length > 1)
-				def = Long.parseLong(args[args.length - 1].toString());
-			if (isNumber(str))
-				return Long.parseLong(str);
-		}
-		return def;
-	}
+    /**
+     * 百分数转小数
+     *
+     * @param str 需要转换的百分数字符串（支持带%和不带%的格式）
+     * @return 转换后的小数，如果不是有效的数字格式返回0
+     */
+    public static Double percentToDecimal(String str) {
+        try {
+            if (str == null || str.isEmpty()) {
+                return 0d;
+            }
+            // 去除所有空格
+            str = str.trim();
+            // 处理带百分号的情况
+            if (str.endsWith("%")) {
+                str = str.substring(0, str.length() - 1).trim();
+            }
+            // 处理不带百分号的情况，直接转换为小数
+            return new BigDecimal(str).divide(new BigDecimal("100"), 10, RoundingMode.HALF_UP).doubleValue();
+        } catch (Exception e) {
+            logger.error("format percent:{},error", str, e);
+            return 0d;
+        }
+    }
 
-	/**
-	 * Object 转换成 Double 转换失败 返回默认值 0 <br>
-	 * 使用:toDouble(值,默认值[选填])
-	 */
-	public static double toDouble(Object... args) {
-		double def = 0;
-		if (args != null) {
-			String str = toStringTrim(args[0]);
-			if (args.length > 1) {
-				def = Double.parseDouble(args[args.length - 1].toString());
-			}
-			if (isDecimal(str)) {
-				return Double.parseDouble(str);
-			}
-		}
-		return def;
-	}
+    /**
+     * 获取字符串左边指定长度的子串
+     *
+     * @param str 源字符串
+     * @param len 需要获取的长度
+     * @return 截取后的字符串
+     */
+    public static String getLeft(String str, int len) {
+        if (len <= 0)
+            return "";
+        if (str.length() <= len)
+            return str;
+        else
+            return str.substring(0, len);
+    }
 
-	/**
-	 * Object 转换成 BigDecimal 转换失败 返回默认值 0 <br>
-	 * 使用:toDecimal(值,默认值[选填]) 特别注意: new BigDecimal(Double) 会有误差，得先转String
-	 */
-	public static BigDecimal toDecimal(Object... args) {
-		return new BigDecimal(Double.toString(toDouble(args)));
-	}
+    /**
+     * 获取字符串右边指定长度的子串
+     *
+     * @param str 源字符串
+     * @param len 需要获取的长度
+     * @return 截取后的字符串
+     */
+    public static String getRight(String str, int len) {
+        if (len <= 0) {
+            return "";
+        }
+        return str.length() <= len ? str : str.substring(str.length() - len);
+    }
 
-	/**
-	 * Object 转换成 Boolean 转换失败 返回默认值 false <br>
-	 * 使用:toBoolean(值,默认值[选填])
-	 */
-	public static boolean toBoolean(String bool) {
-		if (isEmpty(bool) || (!bool.equals("1") && !bool.equalsIgnoreCase("true") && !bool.equalsIgnoreCase("ok")))
-			return false;
-		else
-			return true;
-	}
+    /**
+     * 将字符串的首字母转换为小写
+     *
+     * @param str 需要转换的字符串
+     * @return 转换后的字符串
+     */
+    public static String firstCharToLowerCase(String str) {
+        char firstChar = str.charAt(0);
+        String tail = str.substring(1);
+        str = Character.toLowerCase(firstChar) + tail;
+        return str;
+    }
 
-	/**
-	 * Object 转换成 String 为null 返回空字符 <br>
-	 * 使用:toString(值,默认值[选填])
-	 */
-	public static String toString(Object... args) {
-		String def = "";
-		if (args != null) {
-			if (args.length > 1)
-				def = toString(args[args.length - 1]);
-			Object obj = args[0];
-			if (obj == null)
-				return def;
-			return obj.toString();
-		} else {
-			return def;
-		}
-	}
+    /**
+     * 将字符串的首字母转换为大写
+     *
+     * @param str 需要转换的字符串
+     * @return 转换后的字符串
+     */
+    public static String firstCharToUpperCase(String str) {
+        char firstChar = str.charAt(0);
+        String tail = str.substring(1);
+        str = Character.toUpperCase(firstChar) + tail;
+        return str;
+    }
 
-	/**
-	 * Object 转换成 String[去除所以空格]; 为null 返回空字符 <br>
-	 * 使用:toStringTrim(值,默认值[选填])
-	 */
-	public static String toStringTrim(Object... args) {
-		String str = toString(args);
-		return str.replaceAll("\\s*", "");
-	}
+    /**
+     * 将字节数组转换为十六进制字符串
+     *
+     * @param srcBytes 源字节数组
+     * @return 转换后的十六进制字符串
+     */
+    public static String byte2Hex(byte[] srcBytes) {
+        StringBuilder hexRetSB = new StringBuilder();
+        for (byte b : srcBytes) {
+            String hexString = Integer.toHexString(0x00ff & b);
+            hexRetSB.append(hexString.length() == 1 ? 0 : "").append(hexString);
+        }
+        return hexRetSB.toString();
+    }
 
-	/** ==============Other Base=================== */
-	public static String getNowTime() {
-		return new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date());
-	}
+    /**
+     * 数字左边补0
+     *
+     * @param obj    要补0的数字
+     * @param length 补0后的总长度
+     * @return 补0后的字符串
+     */
+    public static String leftPad(Long obj, int length) {
+        return String.format("%0" + length + "d", obj);
+    }
 
-	/** 数字左边补0 ,obj:要补0的数， length:补0后的长度 */
-	public static String leftPad(Object obj, int length) {
-		return String.format("%0" + length + "d", toInt(obj));
-	}
 
-	/** 小数 转 百分数 */
-	public static String toPercent(Double str) {
-		StringBuffer sb = new StringBuffer(Double.toString(str * 100.0000d));
-		return sb.append("%").toString();
-	}
-
-	/** 百分数 转 小数 */
-	public static Double toPercent2(String str) {
-		if (str.charAt(str.length() - 1) == '%')
-			return Double.parseDouble(str.substring(0, str.length() - 1)) / 100.0000d;
-		return 0d;
-	}
-
-	/**
-	 * 将byte[] 转换成字符串
-	 */
-	public static String byte2Hex(byte[] srcBytes) {
-		StringBuilder hexRetSB = new StringBuilder();
-		for (byte b : srcBytes) {
-			String hexString = Integer.toHexString(0x00ff & b);
-			hexRetSB.append(hexString.length() == 1 ? 0 : "").append(hexString);
-		}
-		return hexRetSB.toString();
-	}
-
-	/**
-	 * 将16进制字符串转为转换成字符串
-	 */
-	public static byte[] hex2Bytes(String source) {
-		byte[] sourceBytes = new byte[source.length() / 2];
-		for (int i = 0; i < sourceBytes.length; i++) {
-			sourceBytes[i] = (byte) Integer.parseInt(source.substring(i * 2, i * 2 + 2), 16);
-		}
-		return sourceBytes;
-	}
-
-	/** String 转 Money */
-	public static String toMoney(Object str, String MoneyType) {
-		DecimalFormat df = new DecimalFormat(MoneyType);
-		if (isDecimal(str))
-			return df.format(toDecimal(str)).toString();
-		return df.format(toDecimal("0.00")).toString();
-	}
-
-	/** 获取字符串str 左边len位数 */
-	public static String getLeft(Object obj, int len) {
-		String str = toString(obj);
-		if (len <= 0)
-			return "";
-		if (str.length() <= len)
-			return str;
-		else
-			return str.substring(0, len);
-	}
-
-	/** 获取字符串str 右边len位数 */
-	public static String getRight(Object obj, int len) {
-		String str = toString(obj);
-		if (len <= 0)
-			return "";
-		if (str.length() <= len)
-			return str;
-		else
-			return str.substring(str.length() - len, str.length());
-	}
-
-	/**
-	 * 首字母变小写
-	 */
-	public static String firstCharToLowerCase(String str) {
-		Character firstChar = str.charAt(0);
-		String tail = str.substring(1);
-		str = Character.toLowerCase(firstChar) + tail;
-		return str;
-	}
-
-	/**
-	 * 首字母变大写
-	 */
-	public static String firstCharToUpperCase(String str) {
-		Character firstChar = str.charAt(0);
-		String tail = str.substring(1);
-		str = Character.toUpperCase(firstChar) + tail;
-		return str;
-	}
-
-	/**
-	 * List集合去除重复值 只能用于基本数据类型，。 对象类集合，自己写
-	 * */
-	@SuppressWarnings({ "rawtypes", "unchecked" })
-	public static List delMoreList(List list) {
-		Set set = new HashSet();
-		List newList = new ArrayList();
-		for (Iterator iter = list.iterator(); iter.hasNext();) {
-			Object element = iter.next();
-			if (set.add(element))
-				newList.add(element);
-		}
-		return newList;
-	}
-
-	public static String formatParams(String message, Object[] params) {
-		StringBuffer msg = new StringBuffer();
-		String temp = "";
-		for (int i = 0; i < params.length + 1; i++) {
-			int j = message.indexOf("{}") + 2;
-			if (j > 1) {
-				temp = message.substring(0, j);
-				temp = temp.replaceAll("\\{\\}", FormatUtil.toString(params[i]));
-				msg.append(temp);
-				message = message.substring(j);
-			} else {
-				msg.append(message);
-				message = "";
-			}
-		}
-		return msg.toString();
-	}
-
-	/** ============== END =================== */
-	public final static class MoneyType {
-		/** * 保留2位有效数字，整数位每3位逗号隔开 （默认） */
-		public static final String DECIMAL = "#,##0.00";
-		/** * 保留2位有效数字 */
-		public static final String DECIMAL_2 = "0.00";
-		/** * 保留4位有效数字 */
-		public static final String DECIMAL_4 = "0.0000";
-	}
-
-	private static boolean NumberBo(int type, Object obj) {
-		if (isEmpty(obj))
-			return false;
-		int points = 0;
-		int chr = 0;
-		String str = toString(obj);
-		for (int i = str.length(); --i >= 0;) {
-			chr = str.charAt(i);
-			if (chr < 48 || chr > 57) { // 判断数字
-				if (i == 0 && chr == 45) // 判断 - 号
-					return true;
-				if (chr == 46 && type == 1) { // 判断 . 号
-					++points;
-					if (points <= 1)
-						continue;
-				}
-				return false;
-			}
-		}
-		return true;
-	}
-
+    /**
+     * 将十六进制字符串转换为字节数组
+     *
+     * @param source 十六进制字符串
+     * @return 转换后的字节数组
+     */
+    public static byte[] hex2Bytes(String source) {
+        byte[] sourceBytes = new byte[source.length() / 2];
+        for (int i = 0; i < sourceBytes.length; i++) {
+            sourceBytes[i] = (byte) Integer.parseInt(source.substring(i * 2, i * 2 + 2), 16);
+        }
+        return sourceBytes;
+    }
 }
