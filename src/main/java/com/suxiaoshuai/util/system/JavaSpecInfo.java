@@ -12,10 +12,7 @@ public class JavaSpecInfo{
 
 	/**
 	 * 取得当前Java Spec.的名称（取自系统属性：<code>java.specification.name</code>）。
-	 * 
-	 * <p>
 	 * 例如Sun JDK 1.4.2：<code>"Java Platform API Specification"</code>
-	 * </p>
 	 * 
 	 * @return 属性值，如果不能取得（因为Java安全限制）或值不存在，则返回<code>null</code>。
 	 * 
@@ -26,10 +23,7 @@ public class JavaSpecInfo{
 
 	/**
 	 * 取得当前Java Spec.的版本（取自系统属性：<code>java.specification.version</code>）。
-	 * 
-	 * <p>
 	 * 例如Sun JDK 1.4.2：<code>"1.4"</code>
-	 * </p>
 	 * 
 	 * @return 属性值，如果不能取得（因为Java安全限制）或值不存在，则返回<code>null</code>。
 	 * 
@@ -41,10 +35,7 @@ public class JavaSpecInfo{
 
 	/**
 	 * 取得当前Java Spec.的厂商（取自系统属性：<code>java.specification.vendor</code>）。
-	 * 
-	 * <p>
 	 * 例如Sun JDK 1.4.2：<code>"Sun Microsystems Inc."</code>
-	 * </p>
 	 * 
 	 * @return 属性值，如果不能取得（因为Java安全限制）或值不存在，则返回<code>null</code>。
 	 * 
@@ -60,13 +51,10 @@ public class JavaSpecInfo{
 	 */
 	@Override
 	public final String toString() {
-		StringBuilder builder = new StringBuilder();
 
-		builder.append("Java Spec. Name:    "+getName());
-		builder.append("Java Spec. Version: "+getVersion());
-		builder.append("Java Spec. Vendor:  "+getVendor());
-
-		return builder.toString();
+        return "Java Spec. Name:    " + getName() +
+                "Java Spec. Version: " + getVersion() +
+                "Java Spec. Vendor:  " + getVendor();
 	}
 
 }

@@ -148,12 +148,11 @@ public class JavaRuntimeInfo {
         return JAVA_LIBRARY_PATH;
     }
 
-    /**
-     * 取得当前JRE的library搜索路径（取自系统属性：<code>java.library.path</code>）。
-     * 例如Sun JDK 1.4.2：<code>"/opt/jdk1.4.2/bin:..."</code>
-     * </p>
-     *
-     * @return 属性值，如果不能取得（因为Java安全限制）或值不存在，则返回<code>null</code>。
+    /*
+      取得当前JRE的library搜索路径（取自系统属性：<code>java.library.path</code>）。
+      例如Sun JDK 1.4.2：<code>"/opt/jdk1.4.2/bin:..."</code>
+
+      @return 属性值，如果不能取得（因为Java安全限制）或值不存在，则返回<code>null</code>。
      */
     /*public final String[] getLibraryPathArray() {
         return StrUtil.split(getLibraryPath(), SystemUtil.get("path.separator", false));
@@ -161,7 +160,6 @@ public class JavaRuntimeInfo {
 
     /**
      * 取得当前JRE的URL协议packages列表（取自系统属性：<code>java.protocol.handler.pkgs</code>）。
-     *
      * 例如Sun JDK 1.4.2：<code>"sun.net.www.protocol|..."</code>
      *
      * @return 属性值，如果不能取得（因为Java安全限制）或值不存在，则返回<code>null</code>。
@@ -177,18 +175,15 @@ public class JavaRuntimeInfo {
      */
     @Override
     public final String toString() {
-        StringBuilder builder = new StringBuilder();
 
-        builder.append("Java Runtime Name:      ").append(getName()).append("\n");
-        builder.append("Java Runtime Version:   ").append(getVersion()).append("\n");
-        builder.append("Java Home Dir:          ").append(getHomeDir()).append("\n");
-        builder.append("Java Extension Dirs:    ").append(getExtDirs()).append("\n");
-        builder.append("Java Endorsed Dirs:     ").append(getEndorsedDirs()).append("\n");
-        builder.append("Java Class Path:        ").append(getClassPath()).append("\n");
-        builder.append("Java Class Version:     ").append(getClassVersion()).append("\n");
-        builder.append("Java Library Path:      ").append(getLibraryPath()).append("\n");
-        builder.append("Java Protocol Packages: ").append(getProtocolPackages());
-
-        return builder.toString();
+        return "Java Runtime Name:      " + getName() + "\n" +
+                "Java Runtime Version:   " + getVersion() + "\n" +
+                "Java Home Dir:          " + getHomeDir() + "\n" +
+                "Java Extension Dirs:    " + getExtDirs() + "\n" +
+                "Java Endorsed Dirs:     " + getEndorsedDirs() + "\n" +
+                "Java Class Path:        " + getClassPath() + "\n" +
+                "Java Class Version:     " + getClassVersion() + "\n" +
+                "Java Library Path:      " + getLibraryPath() + "\n" +
+                "Java Protocol Packages: " + getProtocolPackages();
     }
 }

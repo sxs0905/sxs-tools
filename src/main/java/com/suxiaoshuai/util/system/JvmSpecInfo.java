@@ -12,10 +12,7 @@ public class JvmSpecInfo {
 
 	/**
 	 * 取得当前JVM spec.的名称（取自系统属性：<code>java.vm.specification.name</code>）。
-	 * 
-	 * <p>
 	 * 例如Sun JDK 1.4.2：<code>"Java Virtual Machine Specification"</code>
-	 * </p>
 	 * 
 	 * @return 属性值，如果不能取得（因为Java安全限制）或值不存在，则返回<code>null</code>。
 	 * 
@@ -26,10 +23,7 @@ public class JvmSpecInfo {
 
 	/**
 	 * 取得当前JVM spec.的版本（取自系统属性：<code>java.vm.specification.version</code>）。
-	 * 
-	 * <p>
 	 * 例如Sun JDK 1.4.2：<code>"1.0"</code>
-	 * </p>
 	 * 
 	 * @return 属性值，如果不能取得（因为Java安全限制）或值不存在，则返回<code>null</code>。
 	 * 
@@ -40,10 +34,7 @@ public class JvmSpecInfo {
 
 	/**
 	 * 取得当前JVM spec.的厂商（取自系统属性：<code>java.vm.specification.vendor</code>）。
-	 * 
-	 * <p>
 	 * 例如Sun JDK 1.4.2：<code>"Sun Microsystems Inc."</code>
-	 * </p>
 	 * 
 	 * @return 属性值，如果不能取得（因为Java安全限制）或值不存在，则返回<code>null</code>。
 	 * 
@@ -59,13 +50,10 @@ public class JvmSpecInfo {
 	 */
 	@Override
 	public final String toString() {
-		StringBuilder builder = new StringBuilder();
 
-		builder.append("JavaVM Spec. Name:    "+getName());
-		builder.append("JavaVM Spec. Version: "+getVersion());
-		builder.append("JavaVM Spec. Vendor:  "+getVendor());
-
-		return builder.toString();
+        return "JavaVM Spec. Name:    " + getName() +
+                "JavaVM Spec. Version: " + getVersion() +
+                "JavaVM Spec. Vendor:  " + getVendor();
 	}
 
 }
