@@ -1,12 +1,18 @@
 package com.suxiaoshuai.util.date;
 
 
-import com.suxiaoshuai.constants.DatePatternConstant;
+import com.suxiaoshuai.constants.DateFormatConstants;
+import com.suxiaoshuai.exception.SxsToolsException;
+import org.apache.commons.collections4.CollectionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.List;
 
 /**
  * 日期工具类
@@ -25,33 +31,33 @@ public class DateUtil {
 
     private static final Logger logger = LoggerFactory.getLogger(DateUtil.class);
     /**
-     * 一分钟毫秒数
+     * 1秒 = 1000毫秒
      */
     public static final int SECOND_OF_MILLISECOND = 1000;
     /**
-     * 每分钟秒数
+     * 1分钟 = 60秒
      */
     public static final int MINUTE_OF_SECONDS = 60;
 
     /**
-     * 一小时秒数
+     * 1小时 = 60分钟 = 3600秒
      */
     public static final int HOUR_OF_SECONDS = MINUTE_OF_SECONDS * 60;
     /**
-     * 一天总共秒数
+     * 1天 = 24小时 = 86400秒
      */
     public static final int DAY_OF_SECONDS = HOUR_OF_SECONDS * 24;
 
 
     /**
-     * 默认日期时间格式
+     * 默认日期时间格式，格式为：yyyy-MM-dd HH:mm:ss
      */
-    public static final String DEFAULT_FORMAT = DatePatternConstant.NORM_DATETIME_PATTERN;
-    
+    public static final String DEFAULT_FORMAT = DateFormatConstants.YYYY_MM_DD_HH_MM_SS;
+
     /**
-     * 默认日期格式（年月日）
+     * 默认日期格式，格式为：yyyy-MM-dd
      */
-    public static final String DEFAULT_YMD = DatePatternConstant.NORM_DATE_PATTERN;
+    public static final String DEFAULT_YMD = DateFormatConstants.YYYY_MM_DD;
 
     /**
      * 按照指定格式格式化日期
@@ -64,6 +70,17 @@ public class DateUtil {
         return ThreadSafeDateUtil.format(date, format);
     }
 
+
+    /**
+     * 自动解析日期字符串，尝试多种格式
+     * 
+     * @param date 字符串格式日期
+     * @return 解析后的日期
+     */
+    public static Date parse(String date) {
+        return parse(date, new ArrayList<>());
+    }
+
     /**
      * 按照指定格式解析时间
      *
@@ -71,8 +88,31 @@ public class DateUtil {
      * @param format 格式
      * @return 解析后的日期
      */
-    public static Date parseDate(String date, String format) {
+    public static Date parse(String date, String format) {
         return ThreadSafeDateUtil.parse(date, format);
+    }
+
+    /**
+     * 使用指定的格式列表解析日期字符串
+     * 
+     * @param date 字符串格式日期
+     * @param datePartnerList 自定义日期格式列表，将与默认格式列表合并
+     * @return 解析后的日期
+     * @throws SxsToolsException 如果无法用任何格式解析日期
+     */
+    public static Date parse(String date, List<String> datePartnerList) {
+        List<String> partnerList = DateFormatConstants.datePartnerList;
+        if (CollectionUtils.isNotEmpty(datePartnerList)) {
+            partnerList.addAll(datePartnerList);
+        }
+        for (String format : partnerList) {
+            try {
+                return ThreadSafeDateUtil.parse(date, format);
+            } catch (Exception e) {
+                logger.debug("parse date {} with format {} failed", date, format, e);
+            }
+        }
+        throw new SxsToolsException("【" + date + "】 date format not support");
     }
 
     /**
@@ -149,6 +189,32 @@ public class DateUtil {
     }
 
     /**
+     * 将java.util.Date转换为java.time.LocalDateTime
+     * 
+     * @param date 日期对象
+     * @return 转换后的LocalDateTime对象，如果date为null则返回null
+     */
+    public static LocalDateTime toLocalDateTime(Date date) {
+        if (date == null) {
+            return null;
+        }
+        return date.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();
+    }
+
+    /**
+     * 将java.time.LocalDateTime转换为java.util.Date
+     * 
+     * @param date LocalDateTime对象
+     * @return 转换后的Date对象，如果date为null则返回null
+     */
+    public static Date toDate(LocalDateTime date) {
+        if (date == null) {
+            return null;
+        }
+        return Date.from(date.atZone(ZoneId.systemDefault()).toInstant());
+    }
+
+    /**
      * 计算两个时间之间相隔的天数
      *
      * @param before 第一个日期
@@ -169,7 +235,7 @@ public class DateUtil {
      * @return 返回时间戳字符串
      */
     public static String getTimeStamp() {
-        return ThreadSafeDateUtil.format(new Date(), DatePatternConstant.PURE_DATETIME_PATTERN);
+        return ThreadSafeDateUtil.format(new Date(), DateFormatConstants.YYYYMMDDHHMMSS);
     }
 
     /**

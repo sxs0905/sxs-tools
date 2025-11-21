@@ -1,6 +1,6 @@
 package com.suxiaoshuai.util.file;
 
-import com.suxiaoshuai.constants.DatePatternConstant;
+import com.suxiaoshuai.constants.DateFormatConstants;
 import com.suxiaoshuai.constants.FileConstant;
 import com.suxiaoshuai.exception.SxsToolsException;
 import com.suxiaoshuai.util.charset.CharsetUtil;
@@ -21,17 +21,23 @@ import java.util.List;
 
 /**
  * ZIP 文件压缩和解压工具类
- * 
+ *
  * @author sxs
  */
 public class ZipUtil {
-    /** 日志记录器 */
+    /**
+     * 日志记录器
+     */
     private static final Logger logger = LoggerFactory.getLogger(ZipUtil.class);
 
-    /** ZIP 文件后缀 */
+    /**
+     * ZIP 文件后缀
+     */
     private static final String ZIP_FILE = FileConstant.FILE_NAME_SEPARATOR + FileConstant.FILE_SUFFIX_ZIP;
 
-    /** 文件读取缓冲区大小 */
+    /**
+     * 文件读取缓冲区大小
+     */
     private static final int CACHE_SIZE = 1024;
 
     /**
@@ -53,9 +59,7 @@ public class ZipUtil {
             if (zipPath.contains(sourcePath)) {
                 throw new SxsToolsException("生成的zip文件路径在待压缩文件目录下,无法完成压缩操作");
             }
-            fileName = StringUtil.isBlank(fileName)
-                    ? DateUtil.formatDate(new Date(), DatePatternConstant.PURE_DATETIME_PATTERN)
-                    : fileName;
+            fileName = StringUtil.isBlank(fileName) ? DateUtil.formatDate(new Date(), DateFormatConstants.YYYYMMDDHHMMSS) : fileName;
             File targetFileDirectory = new File(zipPath);
             if (!targetFileDirectory.exists()) {
                 targetFileDirectory.mkdirs();
@@ -66,8 +70,7 @@ public class ZipUtil {
                     String name = file.getName();
                     name = name.substring(0, name.lastIndexOf(".") == -1 ? name.length() : name.lastIndexOf("."));
                     if (fileName.equalsIgnoreCase(name)) {
-                        fileName = fileName + "_"
-                                + DateUtil.formatDate(new Date(), DatePatternConstant.PURE_DATETIME_PATTERN);
+                        fileName = fileName + "_" + DateUtil.formatDate(new Date(), DateFormatConstants.YYYYMMDDHHMMSS);
                         break;
                     }
                 }

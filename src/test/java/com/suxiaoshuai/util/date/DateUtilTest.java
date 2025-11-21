@@ -1,6 +1,6 @@
 package com.suxiaoshuai.util.date;
 
-import com.suxiaoshuai.constants.DatePatternConstant;
+import com.suxiaoshuai.constants.DateFormatConstants;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -30,14 +30,14 @@ class DateUtilTest {
         @Test
         @DisplayName("测试空日期格式化")
         void testNullDate() {
-            assertNull(DateUtil.formatDate(null, DatePatternConstant.NORM_DATETIME_PATTERN));
+            assertNull(DateUtil.formatDate(null, DateFormatConstants.YYYY_MM_DD_HH_MM_SS));
         }
 
         @Test
         @DisplayName("测试正常日期格式化")
         void testNormalDate() {
             assertEquals("2024-01-15 10:30:45", 
-                DateUtil.formatDate(testDate, DatePatternConstant.NORM_DATETIME_PATTERN));
+                DateUtil.formatDate(testDate, DateFormatConstants.YYYY_MM_DD_HH_MM_SS));
         }
     }
 
@@ -47,13 +47,13 @@ class DateUtilTest {
         @Test
         @DisplayName("测试空字符串解析")
         void testNullString() {
-            assertNull(DateUtil.parseDate(null, DatePatternConstant.NORM_DATETIME_PATTERN));
+            assertNull(DateUtil.parse(null, DateFormatConstants.YYYY_MM_DD_HH_MM_SS));
         }
 
         @Test
         @DisplayName("测试正常日期解析")
         void testNormalString() {
-            Date date = DateUtil.parseDate("2024-01-15 10:30:45", DatePatternConstant.NORM_DATETIME_PATTERN);
+            Date date = DateUtil.parse("2024-01-15 10:30:45", DateFormatConstants.YYYY_MM_DD_HH_MM_SS);
             assertEquals(testDate.getTime() / 1000, date.getTime() / 1000);
         }
     }
