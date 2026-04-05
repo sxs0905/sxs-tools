@@ -1,13 +1,17 @@
 package com.suxiaoshuai.util.httpclient;
 
+import com.suxiaoshuai.util.http.HttpResponse;
+import com.suxiaoshuai.util.http.HttpUtils;
+import com.suxiaoshuai.util.json.JsonUtil;
 import org.junit.jupiter.api.Test;
+
 
 class HttpUtilsTest {
 
     @Test
     void get() {
-        String s = HttpUtils.get("http://www.baidu.com");
-        System.out.println(s);
+        HttpResponse httpResponse = HttpUtils.get("http://www.baidu.com");
+        System.out.println(JsonUtil.toJson(httpResponse));
     }
 
     @Test
