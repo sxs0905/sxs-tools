@@ -1,13 +1,14 @@
-package com.ly.fn.biz.newpay.emob.common.utils.sm.platform.sm4;
+package com.suxiaoshuai.util.sm.sm4;
 
-import com.ly.fn.inf.matrix.logger.api.Logger;
-import com.ly.fn.inf.matrix.logger.api.LoggerFactory;
-import com.ly.fn.inf.matrix.util.StringUtil;
+import com.suxiaoshuai.util.httpclient.HttpUtils;
+import com.suxiaoshuai.util.string.StringUtil;
 import org.bouncycastle.crypto.engines.SM4Engine;
 import org.bouncycastle.crypto.modes.GCMBlockCipher;
 import org.bouncycastle.crypto.modes.GCMModeCipher;
 import org.bouncycastle.crypto.params.KeyParameter;
 import org.bouncycastle.crypto.params.ParametersWithIV;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.nio.charset.StandardCharsets;
 import java.security.SecureRandom;

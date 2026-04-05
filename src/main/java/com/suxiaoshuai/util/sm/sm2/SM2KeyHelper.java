@@ -1,4 +1,4 @@
-package com.ly.fn.biz.newpay.emob.common.utils.sm.platform.sm2;
+package com.suxiaoshuai.util.sm.sm2;
 
 import org.bouncycastle.asn1.ASN1InputStream;
 import org.bouncycastle.asn1.ASN1Sequence;

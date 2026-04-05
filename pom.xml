@@ -9,7 +9,7 @@
     <version>1.0.1</version>
     <packaging>jar</packaging>
     <name>sxs tools</name>
-    <url>https://gitee.com/zyjhs/sxs-tools</url>
+    <url>https://github.com/sxs0905/sxs-tools</url>
     <description>
         java 工具箱
     </description>
@@ -23,13 +23,13 @@
                 <role>Developer</role>
             </roles>
             <email>243951825@qq.com</email>
-            <url>https://gitee.com/zyjhs</url>
+            <url>https://github.com/sxs0905</url>
         </developer>
     </developers>
 
     <issueManagement>
-        <system>Gitee</system>
-        <url>https://gitee.com/zyjhs/sxs-tools/issues</url>
+        <system>github</system>
+        <url>https://github.com/sxs0905/sxs-tools/issues</url>
     </issueManagement>
 
     <inceptionYear>2025</inceptionYear>
@@ -42,9 +42,9 @@
     </licenses>
 
     <scm>
-        <connection>scm:git:https://gitee.com/zyjhs/sxs-tools.git</connection>
-        <developerConnection>scm:git:git@gitee.com:zyjhs/sxs-tools.git</developerConnection>
-        <url>https://gitee.com/zyjhs/sxs-tools</url>
+        <connection>scm:git:https://github.com/sxs0905/sxs-tools.git</connection>
+        <developerConnection>scm:git:git@github.com:sxs0905/sxs-tools.git</developerConnection>
+        <url>https://github.com/sxs0905/sxs-tools.git</url>
         <tag>HEAD</tag>
     </scm>
 
@@ -146,6 +146,11 @@
             <groupId>com.squareup.okhttp3</groupId>
             <artifactId>okhttp</artifactId>
             <version>4.12.0</version>
+        </dependency>
+        <dependency>
+            <groupId>org.bouncycastle</groupId>
+            <artifactId>bcprov-jdk18on</artifactId>
+            <version>1.78.1</version>
         </dependency>
     </dependencies>
     <build>

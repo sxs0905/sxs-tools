@@ -1,9 +1,7 @@
-package com.ly.fn.biz.newpay.emob.common.utils.sm.platform.sm2;
+package com.suxiaoshuai.util.sm.sm2;
 
 
-import com.ly.fn.biz.newpay.emob.common.utils.sm.platform.sm3.SM3Helper;
-import com.ly.fn.inf.matrix.logger.api.Logger;
-import com.ly.fn.inf.matrix.logger.api.LoggerFactory;
+import com.suxiaoshuai.util.sm.sm3.SM3Helper;
 import org.bouncycastle.crypto.InvalidCipherTextException;
 import org.bouncycastle.crypto.engines.SM2Engine;
 import org.bouncycastle.crypto.params.ECPublicKeyParameters;
@@ -17,7 +15,7 @@ import java.security.PublicKey;
 import java.security.SecureRandom;
 
 public class SM2Utils {
-    private static final Logger logger = LoggerFactory.getLogger(SM2Utils.class);
+    // private static final Logger logger = LoggerFactory.getLogger(SM2Utils.class);
 
     public static byte[] sign(String data, String pri_key) throws Exception {
         SM2Helper sM2Helper = new SM2Helper();
@@ -34,10 +32,10 @@ public class SM2Utils {
      */
     public static boolean verySign(byte[] sign, String oriData, String center_pub_key) throws IOException {
 
-        logger.info("软件验证签名开始----------------pub：{}", center_pub_key);
+        // logger.info("软件验证签名开始----------------pub：{}", center_pub_key);
         SM2Helper sm2Helper = new SM2Helper();
         byte[] oriHash = SM3Helper.hash(oriData.getBytes(StandardCharsets.UTF_8));
-        logger.info("对元数据进行hash：{}", Hex.toHexString(oriHash));
+        // logger.info("对元数据进行hash：{}", Hex.toHexString(oriHash));
         return sm2Helper.verifySign(oriHash, sign, center_pub_key);
     }
 

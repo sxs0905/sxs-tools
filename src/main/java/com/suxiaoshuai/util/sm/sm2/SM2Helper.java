@@ -1,7 +1,5 @@
-package com.ly.fn.biz.newpay.emob.common.utils.sm.platform.sm2;
+package com.suxiaoshuai.util.sm.sm2;
 
-import com.ly.fn.inf.matrix.logger.api.Logger;
-import com.ly.fn.inf.matrix.logger.api.LoggerFactory;
 import org.bouncycastle.asn1.*;
 import org.bouncycastle.crypto.CryptoException;
 import org.bouncycastle.crypto.InvalidCipherTextException;
@@ -26,7 +24,7 @@ import java.security.SecureRandom;
  * @CreateDate: 2020/9/16 16:57
  */
 public class SM2Helper {
-    private static final Logger logger = LoggerFactory.getLogger(SM2Helper.class);
+    // private static final Logger logger = LoggerFactory.getLogger(SM2Helper.class);
 
     /**
      * 公钥加密
@@ -101,7 +99,7 @@ public class SM2Helper {
      * @throws Exception
      */
     public byte[] sign(byte[] indata, String privateKey) throws NoSuchAlgorithmException, CryptoException, IOException {
-        logger.info("签名密钥key：{}", privateKey);
+        // logger.info("签名密钥key：{}", privateKey);
         byte[] priKey = Hex.decode(privateKey);
         SM2Signer signer = new SM2Signer();
         ParametersWithID parametersWithID = new SM2KeyHelper().buildPrivateParametersWithID(priKey);

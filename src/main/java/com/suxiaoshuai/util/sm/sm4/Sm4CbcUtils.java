@@ -1,16 +1,16 @@
-package com.ly.fn.biz.newpay.emob.common.utils.sm.platform.sm4;
+package com.suxiaoshuai.util.sm.sm4;
 
 
-import com.ly.fn.inf.matrix.logger.api.Logger;
-import com.ly.fn.inf.matrix.logger.api.LoggerFactory;
+import com.suxiaoshuai.util.httpclient.HttpUtils;
 import org.bouncycastle.crypto.engines.SM4Engine;
 import org.bouncycastle.crypto.modes.CBCBlockCipher;
 import org.bouncycastle.crypto.paddings.PKCS7Padding;
 import org.bouncycastle.crypto.paddings.PaddedBufferedBlockCipher;
 import org.bouncycastle.crypto.params.KeyParameter;
 import org.bouncycastle.crypto.params.ParametersWithIV;
-import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.util.encoders.Base64;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.crypto.Cipher;
 import javax.crypto.spec.IvParameterSpec;
@@ -159,7 +159,7 @@ public class Sm4CbcUtils {
             byte[] srcData = data.getBytes(StandardCharsets.UTF_8);
             return encrypt_CBC_NO_Padding(keyData, srcData);
         } catch (Exception var6) {
-            logger.error("encrypt Cbc error", var6);
+            // logger.error("encrypt Cbc error", var6);
             return null;
         }
     }

@@ -1,4 +1,4 @@
-package cqpay.demo.util;
+package com.suxiaoshuai.util;
 
 import org.apache.commons.codec.binary.Base64;
 

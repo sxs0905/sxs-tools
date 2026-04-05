@@ -1,4 +1,4 @@
-package com.ly.fn.biz.newpay.emob.common.utils.sm.platform.sm3;
+package com.suxiaoshuai.util.sm.sm3;
 
 import org.bouncycastle.crypto.digests.SM3Digest;
 import org.bouncycastle.crypto.macs.HMac;

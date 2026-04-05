@@ -1,4 +1,4 @@
-package com.ly.fn.biz.newpay.emob.common.utils.sm.platform.sm2;
+package com.suxiaoshuai.util.sm.sm2;
 
 import org.bouncycastle.asn1.gm.GMNamedCurves;
 import org.bouncycastle.asn1.x9.X9ECParameters;

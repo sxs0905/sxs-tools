@@ -1,16 +1,16 @@
-package com.ly.fn.biz.newpay.emob.common.utils.sm.platform;
+package com.suxiaoshuai.util.sm;
 
-import com.ly.fn.biz.newpay.emob.common.utils.Base64Util;
-import com.ly.fn.biz.newpay.emob.common.utils.sm.platform.sm2.SM2Helper;
-import com.ly.fn.biz.newpay.emob.common.utils.sm.platform.sm2.SM2Utils;
-import com.ly.fn.inf.matrix.logger.api.Logger;
-import com.ly.fn.inf.matrix.logger.api.LoggerFactory;
+import com.suxiaoshuai.util.Base64Util;
+import com.suxiaoshuai.util.sm.sm2.SM2Helper;
+import com.suxiaoshuai.util.sm.sm2.SM2Utils;
 import org.bouncycastle.util.encoders.Hex;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.nio.charset.StandardCharsets;
 
 public class SmUtils {
-    static final Logger logger = LoggerFactory.getLogger(SmUtils.class);
+    private static final Logger logger = LoggerFactory.getLogger(SmUtils.class);
 
     public static String sign(String signData, String merPrivateKey) throws Exception {
         logger.info("收到签名请求：signData={};merPrivateKey={}", signData, merPrivateKey);

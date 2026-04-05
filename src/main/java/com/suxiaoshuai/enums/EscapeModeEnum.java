@@ -1,4 +1,4 @@
-package com.suxiaoshuai.util.string;
+package com.suxiaoshuai.enums;
 
 /**
  * 字符串转义模式枚举

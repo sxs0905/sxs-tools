@@ -1,4 +1,4 @@
-package com.suxiaoshuai.constants;
+package com.suxiaoshuai.enums;
 
 /**
  * aes 密钥长度

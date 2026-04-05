@@ -1,5 +1,6 @@
 package com.suxiaoshuai.util.string;
 
+import com.suxiaoshuai.enums.EscapeModeEnum;
 import org.apache.commons.text.StringEscapeUtils;
 import org.jsoup.Jsoup;
 import org.jsoup.safety.Safelist;
