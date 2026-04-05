@@ -3,6 +3,7 @@ package com.suxiaoshuai.util.image;
 import com.suxiaoshuai.exception.SxsToolsException;
 import com.suxiaoshuai.util.security.FormatUtil;
 import com.suxiaoshuai.util.string.StringUtil;
+import org.apache.commons.imaging.Imaging;
 import org.apache.commons.net.io.Util;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -12,8 +13,6 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.*;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 
 /**
  * 图片水印工具类
@@ -25,57 +24,80 @@ public class WaterMarkImageUtil {
 
     private static final Logger logger = LoggerFactory.getLogger(WaterMarkImageUtil.class);
 
+    private static final java.util.Set<String> IMAGE_EXTENSIONS = java.util.Set.of(
+            ".jpg", ".jpeg", ".png", ".gif", ".bmp", ".webp", ".tiff", ".tif"
+    );
+
     /**
      * 本地文本水印
      *
-     * @param originFilePath 源文件路径
-     * @param destFilePath   输出路径
-     * @param waterMarkInfo  水印信息
+     * @param oriFile       源文件路径
+     * @param destFile      输出文件
+     * @param waterMarkInfo 水印信息
      */
-    public static void localText(String originFilePath, String destFilePath, TextWaterMark waterMarkInfo) {
-        try {
-            File file = new File(originFilePath);
-            InputStream inputStream = markImageByText(new FileInputStream(file), waterMarkInfo);
-            out(inputStream, destFilePath);
-        } catch (Exception e) {
-            logger.error("markImageByText error:{}", e.getMessage(), e);
-        }
+    public static void text(File oriFile, File destFile, TextWaterMark waterMarkInfo) {
+        watermark(oriFile, destFile, null, waterMarkInfo);
     }
 
     /**
      * 本地图片水印
      *
-     * @param originFilePath 源文件路径
-     * @param destFilePath   输出路径
-     * @param waterMarkInfo  水印信息
+     * @param oriFile       源文件路径
+     * @param destFile      输出文件
+     * @param waterMarkInfo 水印信息
      */
-    public static void localImage(String originFilePath, String destFilePath, ImageWaterMark waterMarkInfo) {
+    public static void image(File oriFile, File destFile, ImageWaterMark waterMarkInfo) {
+        watermark(oriFile, destFile, waterMarkInfo, null);
+    }
+
+    /**
+     * 本地复合水印（图片水印+文字水印）
+     *
+     * @param oriFile       源文件路径
+     * @param destFile      输出文件
+     * @param imageWaterMark 图片水印信息，可为null
+     * @param textWaterMark  文字水印信息，可为null
+     */
+    public static void watermark(File oriFile, File destFile, ImageWaterMark imageWaterMark, TextWaterMark textWaterMark) {
         try {
-            File file = new File(originFilePath);
-            InputStream inputStream = markImageByIcon(new FileInputStream(file), waterMarkInfo);
-            out(inputStream, destFilePath);
+            validateImageFile(oriFile);
+            if (destFile != null) {
+                validateImageFile(destFile);
+            }
+            if (imageWaterMark == null && textWaterMark == null) {
+                throw new SxsToolsException("图片水印和文字水印不能同时为空");
+            }
+
+            InputStream inputStream = new FileInputStream(oriFile);
+            if (imageWaterMark != null) {
+                inputStream = markImageByIcon(inputStream, imageWaterMark);
+            }
+            if (textWaterMark != null) {
+                inputStream = markImageByText(inputStream, textWaterMark);
+            }
+            out(oriFile, inputStream, destFile, "wm");
         } catch (Exception e) {
-            logger.error("markImageByText error:{}", e.getMessage(), e);
+            logger.error("markImageByMulti error:{}", e.getMessage(), e);
         }
     }
 
     /**
      * 给图片添加水印图片、可设置水印图片旋转角度
      *
-     * @param inputStream   源图片IO流
-     * @param waterMarkInfo 水印信息，如果为null则使用默认配置
+     * @param oriImgStream      源图片IO流
+     * @param iconWaterMarkInfo 水印信息，如果为null则使用默认配置
      * @return 添加水印后的图片输入流
      * @throws SxsToolsException 添加水印过程中发生异常
      */
-    public static InputStream markImageByIcon(InputStream inputStream, ImageWaterMark waterMarkInfo) {
+    private static InputStream markImageByIcon(InputStream oriImgStream, ImageWaterMark iconWaterMarkInfo) {
         logger.info(">>>>>>>>>>>>>>>>>>>>>>> add water mark image begin");
         InputStream is;
         ByteArrayOutputStream byteArrayOutputStream = null;
         try {
 
-            waterMarkInfo = waterMarkInfo == null ? new ImageWaterMark() : waterMarkInfo;
-            Integer degree = waterMarkInfo.getDegree();
-            Image srcImg = ImageIO.read(inputStream);
+            iconWaterMarkInfo = iconWaterMarkInfo == null ? new ImageWaterMark() : iconWaterMarkInfo;
+            Integer degree = iconWaterMarkInfo.getDegree();
+            Image srcImg = ImageIO.read(oriImgStream);
             // 图片宽度
             int width = srcImg.getWidth(null);
             // 图片高度
@@ -98,25 +120,35 @@ public class WaterMarkImageUtil {
 
             // 4、水印图片的路径 水印图片一般为gif或者png的，这样可设置透明度
             // 根据url生成ImageIcon,jar包内的图片相对应的文件不存在
-            ImageIcon imgIcon = waterMarkInfo.getImageIcon();
-            if (imgIcon != null) {
-                // 得到Image对象。
-                Image watermarkImg = imgIcon.getImage();
+            Image watermarkImg = null;
+            File watermarkFile = iconWaterMarkInfo.getImageFile();
+            if (watermarkFile != null) {
+                watermarkImg = readWatermarkImage(watermarkFile);
+            }
+
+            if (watermarkImg == null) {
+                ImageIcon imgIcon = iconWaterMarkInfo.getImageIcon();
+                if (imgIcon != null) {
+                    watermarkImg = ensureImageLoaded(imgIcon);
+                }
+            }
+
+            if (watermarkImg != null) {
 
                 int originalWidth = watermarkImg.getWidth(null);
                 int originalHeight = watermarkImg.getHeight(null);
                 int finalWidth = originalWidth;
                 int finalHeight = originalHeight;
 
-                if (waterMarkInfo.getScaleMode() == ScaleMode.FIXED_WIDTH && waterMarkInfo.getWatermarkWidth() > 0) {
-                    finalWidth = waterMarkInfo.getWatermarkWidth();
+                if (iconWaterMarkInfo.getScaleMode() == ScaleMode.FIXED_WIDTH && iconWaterMarkInfo.getWatermarkWidth() > 0) {
+                    finalWidth = iconWaterMarkInfo.getWatermarkWidth();
                     finalHeight = (int) ((double) finalWidth / originalWidth * originalHeight);
-                } else if (waterMarkInfo.getScaleMode() == ScaleMode.FIXED_HEIGHT && waterMarkInfo.getWatermarkHeight() > 0) {
-                    finalHeight = waterMarkInfo.getWatermarkHeight();
+                } else if (iconWaterMarkInfo.getScaleMode() == ScaleMode.FIXED_HEIGHT && iconWaterMarkInfo.getWatermarkHeight() > 0) {
+                    finalHeight = iconWaterMarkInfo.getWatermarkHeight();
                     finalWidth = (int) ((double) finalHeight / originalHeight * originalWidth);
-                } else if (waterMarkInfo.getScaleMode() == ScaleMode.CUSTOMER && waterMarkInfo.getWatermarkWidth() > 0 && waterMarkInfo.getWatermarkHeight() > 0) {
-                    finalWidth = waterMarkInfo.getWatermarkWidth();
-                    finalHeight = waterMarkInfo.getWatermarkHeight();
+                } else if (iconWaterMarkInfo.getScaleMode() == ScaleMode.CUSTOMER && iconWaterMarkInfo.getWatermarkWidth() > 0 && iconWaterMarkInfo.getWatermarkHeight() > 0) {
+                    finalWidth = iconWaterMarkInfo.getWatermarkWidth();
+                    finalHeight = iconWaterMarkInfo.getWatermarkHeight();
                 }
                 logger.info("water mark image origin width: {}, original height: {},final width:{},height:{}", originalWidth, originalHeight, finalWidth, finalHeight);
                 if (finalWidth > 0 && finalHeight > 0) {
@@ -128,7 +160,7 @@ public class WaterMarkImageUtil {
                     watermarkImg = scaledWatermark;
                 }
 
-                g.setComposite(waterMarkInfo.getComposite());
+                g.setComposite(iconWaterMarkInfo.getComposite());
 
                 // 获取文字的宽高
                 // 文字的高度
@@ -139,15 +171,26 @@ public class WaterMarkImageUtil {
                 int x = -(iconWidth / 2);
                 // 文字在图片中的y坐标，初始值向负方向偏移200，
                 int y = -200;
+                int drawCount = 0;
                 while (height - y > -200) {
                     while (width - x > -100) {
                         g.drawImage(watermarkImg, x, y, null);
-                        x = x + iconWidth + waterMarkInfo.getWordWidthOffset();
+                        drawCount++;
+                        x = x + iconWidth + iconWaterMarkInfo.getWordWidthOffset();
                     }
                     x = -(iconWidth / 2);
-                    y = y + iconHeight + waterMarkInfo.getWordHeightOffset();
+                    y = y + iconHeight + iconWaterMarkInfo.getWordHeightOffset();
+                }
+
+                // 偏移和旋转配置可能导致平铺区域未覆盖可视范围，兜底在中心点再绘制一次
+                if (drawCount == 0) {
+                    int centerX = (width - iconWidth) / 2;
+                    int centerY = (height - iconHeight) / 2;
+                    g.drawImage(watermarkImg, centerX, centerY, null);
                 }
                 g.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER));
+            } else {
+                throw new SxsToolsException("图片水印未设置，请先调用setImageFile或setImageIcon");
             }
             // 7、释放资源
             g.dispose();
@@ -166,8 +209,8 @@ public class WaterMarkImageUtil {
                 if (null != byteArrayOutputStream) {
                     byteArrayOutputStream.close();
                 }
-                if (null != inputStream) {
-                    inputStream.close();
+                if (null != oriImgStream) {
+                    oriImgStream.close();
                 }
             } catch (Exception e) {
                 logger.error("add water mark image close stream error:{}", e.getMessage(), e);
@@ -185,7 +228,7 @@ public class WaterMarkImageUtil {
      * @return 添加水印后的图片输入流
      * @throws IOException 读写图片过程中发生IO异常
      */
-    public static InputStream markImageByText(InputStream inputStream, TextWaterMark waterMarkInfo) throws IOException {
+    private static InputStream markImageByText(InputStream inputStream, TextWaterMark waterMarkInfo) throws IOException {
         logger.info(">>>>>>>>>>>>>>>>>>>>>>> add water mark text begin");
         InputStream is;
         ByteArrayOutputStream byteArrayOutputStream = null;
@@ -299,17 +342,152 @@ public class WaterMarkImageUtil {
     }
 
     /**
+     * 确保ImageIcon对应的图片已加载完成，避免异步加载导致宽高为-1
+     */
+    private static Image ensureImageLoaded(ImageIcon imgIcon) {
+        Image image = imgIcon.getImage();
+        if (image == null) {
+            return null;
+        }
+        MediaTracker tracker = new MediaTracker(new Canvas());
+        tracker.addImage(image, 0);
+        try {
+            tracker.waitForID(0);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw new SxsToolsException("等待水印图片加载时被中断", e);
+        }
+        if (tracker.isErrorID(0) || image.getWidth(null) <= 0 || image.getHeight(null) <= 0) {
+            // 某些场景下ImageIcon可能仍未得到可用尺寸，尝试按描述路径同步读取一次
+            String description = imgIcon.getDescription();
+            String detectedType = "unknown";
+            if (StringUtil.isNotBlank(description)) {
+                File iconFile = new File(description);
+                if (iconFile.exists() && iconFile.isFile()) {
+                    try {
+                        return readWatermarkImage(iconFile);
+                    } catch (SxsToolsException e) {
+                        detectedType = detectImageType(iconFile);
+                        logger.warn("fallback load watermark image by description failed: {}", description, e);
+                    }
+                }
+            }
+            throw new SxsToolsException("水印图片未正确加载，请检查图片路径或图片内容，description=" + description
+                    + ", detectedType=" + detectedType
+                    + ", width=" + image.getWidth(null) + ", height=" + image.getHeight(null)
+                    + "。可尝试改为setImageFile传入图片文件");
+        }
+        return image;
+    }
+
+    /**
+     * 读取水印图片，优先ImageIO，失败后使用commons-imaging兜底
+     */
+    private static BufferedImage readWatermarkImage(File imageFile) {
+        if (imageFile == null || !imageFile.exists() || !imageFile.isFile()) {
+            throw new SxsToolsException("水印图片文件不存在: " + (imageFile == null ? "null" : imageFile.getAbsolutePath()));
+        }
+        try {
+            BufferedImage bufferedImage = ImageIO.read(imageFile);
+            if (bufferedImage != null && bufferedImage.getWidth() > 0 && bufferedImage.getHeight() > 0) {
+                return bufferedImage;
+            }
+        } catch (IOException e) {
+            logger.warn("read watermark image by ImageIO failed: {}", imageFile.getAbsolutePath(), e);
+        }
+
+        try {
+            BufferedImage bufferedImage = Imaging.getBufferedImage(imageFile);
+            if (bufferedImage != null && bufferedImage.getWidth() > 0 && bufferedImage.getHeight() > 0) {
+                return bufferedImage;
+            }
+        } catch (IOException e) {
+            logger.warn("read watermark image by commons-imaging failed: {}", imageFile.getAbsolutePath(), e);
+        }
+
+        throw new SxsToolsException("水印图片读取失败: " + imageFile.getAbsolutePath() + ", detectedType=" + detectImageType(imageFile));
+    }
+
+    /**
+     * 根据文件头简单识别图片格式，用于诊断扩展名与真实格式不一致的情况
+     */
+    private static String detectImageType(File file) {
+        try (InputStream in = new FileInputStream(file)) {
+            byte[] header = new byte[12];
+            int len = in.read(header);
+            if (len >= 4) {
+                if ((header[0] & 0xFF) == 0x89 && header[1] == 0x50 && header[2] == 0x4E && header[3] == 0x47) {
+                    return "png";
+                }
+                if ((header[0] & 0xFF) == 0xFF && (header[1] & 0xFF) == 0xD8) {
+                    return "jpeg";
+                }
+                if (header[0] == 'G' && header[1] == 'I' && header[2] == 'F') {
+                    return "gif";
+                }
+                if (header[0] == 'B' && header[1] == 'M') {
+                    return "bmp";
+                }
+                if (header[0] == 0x00 && header[1] == 0x00 && header[2] == 0x01 && header[3] == 0x00) {
+                    return "ico";
+                }
+            }
+            if (len >= 12 && header[0] == 'R' && header[1] == 'I' && header[2] == 'F' && header[3] == 'F'
+                    && header[8] == 'W' && header[9] == 'E' && header[10] == 'B' && header[11] == 'P') {
+                return "webp";
+            }
+        } catch (IOException e) {
+            logger.warn("detect image type failed: {}", file.getAbsolutePath(), e);
+        }
+        return "unknown";
+    }
+
+    /**
      * 将输入流写入指定路径的文件
      *
-     * @param inputStream  输入流
-     * @param destFilePath 目标文件路径
+     * @param oriFile     原始文件，用于生成默认的目标文件路径
+     * @param inputStream 输入流
+     * @param destFile    目标文件路径
+     * @param fileEndName 文件后缀名，用于生成默认的目标文件路径
      * @throws IOException IO异常
      */
-    private static void out(InputStream inputStream, String destFilePath) throws IOException {
+    private static void out(File oriFile, InputStream inputStream, File destFile, String fileEndName) throws IOException {
+        if (destFile == null) {
+            String parent = oriFile.getParent();
+            String name = oriFile.getName();
+            int dotIndex = name.lastIndexOf('.');
+            if (dotIndex > 0) {
+                String baseName = name.substring(0, dotIndex);
+                String extension = name.substring(dotIndex);
+                destFile = new File(parent, baseName + "_" + fileEndName + extension);
+            } else {
+                destFile = new File(parent, name + "_" + fileEndName);
+            }
+        }
         try (InputStream in = inputStream;
-             OutputStream os = Files.newOutputStream(Paths.get(destFilePath))) {
+             OutputStream os = new FileOutputStream(destFile)) {
             Util.copyStream(in, os);
             os.flush();
+        } catch (IOException e) {
+            logger.error("write water mark image to dest file:{},stream to stream error:", destFile.toPath(), e);
+            throw e;
+        }
+    }
+
+    /**
+     * 校验文件是否为图片文件
+     *
+     * @param file 待校验的文件
+     * @throws SxsToolsException 如果文件不存在、不是文件或不是图片格式
+     */
+    private static void validateImageFile(File file) {
+        if (file == null) {
+            throw new SxsToolsException("文件不能为空");
+        }
+        String fileName = file.getName().toLowerCase(java.util.Locale.ROOT);
+        boolean isImage = IMAGE_EXTENSIONS.stream().anyMatch(fileName::endsWith);
+        if (!isImage) {
+            throw new SxsToolsException("文件不是图片格式: " + file.getAbsolutePath());
         }
     }
 }

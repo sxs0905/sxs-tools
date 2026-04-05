@@ -1,6 +1,9 @@
 package com.suxiaoshuai.util.image;
 
+import javax.imageio.ImageIO;
 import javax.swing.*;
+import java.io.File;
+import java.io.IOException;
 
 /**
  * 图片水印信息类
@@ -11,6 +14,11 @@ public final class ImageWaterMark extends WaterMarkInfo {
      * 一般为gif或者png的，这样可设置透明度
      */
     private ImageIcon imageIcon;
+
+    /**
+     * 水印图片文件（优先于imageIcon）
+     */
+    private File imageFile;
 
     /**
      * 水印宽高模式
@@ -43,6 +51,26 @@ public final class ImageWaterMark extends WaterMarkInfo {
      */
     public ImageWaterMark setImageIcon(ImageIcon imageIcon) {
         this.imageIcon = imageIcon;
+        return this;
+    }
+
+    /**
+     * 获取水印图片文件
+     *
+     * @return 水印图片文件
+     */
+    public File getImageFile() {
+        return imageFile;
+    }
+
+    /**
+     * 设置水印图片文件（优先于imageIcon）
+     *
+     * @param imageFile 水印图片文件
+     * @return 当前对象，支持链式调用
+     */
+    public ImageWaterMark setImageFile(File imageFile) {
+        this.imageFile = imageFile;
         return this;
     }
 
