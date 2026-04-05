@@ -3,6 +3,8 @@ package com.suxiaoshuai.util.phone;
 
 import com.suxiaoshuai.util.string.StringUtil;
 
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -10,6 +12,13 @@ import java.util.regex.Pattern;
  * 正则工具类
  */
 public class RegexUtil {
+
+    private static final Map<String, Pattern> PATTERN_CACHE = new ConcurrentHashMap<>();
+
+    private static Pattern getPattern(String regex) {
+        return PATTERN_CACHE.computeIfAbsent(regex, Pattern::compile);
+    }
+
     /**
      * 是否匹配
      *
@@ -21,7 +30,7 @@ public class RegexUtil {
         if (StringUtil.isBlank(context) || StringUtil.isBlank(regex)) {
             return false;
         }
-        Pattern pattern = Pattern.compile(regex);
+        Pattern pattern = getPattern(regex);
         Matcher matcher = pattern.matcher(context);
         return matcher.matches();
     }
@@ -38,7 +47,7 @@ public class RegexUtil {
         if (StringUtil.isBlank(context) || StringUtil.isBlank(regex)) {
             return "";
         }
-        Pattern pattern = Pattern.compile(regex);
+        Pattern pattern = getPattern(regex);
         Matcher matcher = pattern.matcher(context);
         return matcher.matches() ? (StringUtil.isBlank(matcher.group(portion)) ? "" : matcher.group(portion)) : "";
     }

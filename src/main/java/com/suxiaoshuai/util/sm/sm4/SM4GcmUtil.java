@@ -1,6 +1,5 @@
 package com.suxiaoshuai.util.sm.sm4;
 
-import com.suxiaoshuai.util.httpclient.HttpUtils;
 import com.suxiaoshuai.util.string.StringUtil;
 import org.bouncycastle.crypto.engines.SM4Engine;
 import org.bouncycastle.crypto.modes.GCMBlockCipher;
@@ -16,6 +15,7 @@ import java.security.SecureRandom;
 public class SM4GcmUtil {
 
     private static final Logger logger = LoggerFactory.getLogger(SM4GcmUtil.class);
+    private static final SecureRandom SECURE_RANDOM = new SecureRandom();
 
     // -------------------------- 国密/支付场景固定参数（禁止修改） --------------------------
     /**
@@ -43,7 +43,7 @@ public class SM4GcmUtil {
      */
     public static byte[] key() {
         byte[] key = new byte[SM4_KEY_LENGTH];
-        new SecureRandom().nextBytes(key);
+        SECURE_RANDOM.nextBytes(key);
         return key;
     }
 
@@ -55,7 +55,7 @@ public class SM4GcmUtil {
      */
     public static byte[] iv() {
         byte[] iv = new byte[SM4_GCM_IV_LENGTH];
-        new SecureRandom().nextBytes(iv);
+        SECURE_RANDOM.nextBytes(iv);
         return iv;
     }
 

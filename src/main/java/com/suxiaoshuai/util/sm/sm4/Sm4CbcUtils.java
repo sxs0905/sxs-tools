@@ -1,7 +1,6 @@
 package com.suxiaoshuai.util.sm.sm4;
 
 
-import com.suxiaoshuai.util.httpclient.HttpUtils;
 import org.bouncycastle.crypto.engines.SM4Engine;
 import org.bouncycastle.crypto.modes.CBCBlockCipher;
 import org.bouncycastle.crypto.paddings.PKCS7Padding;
@@ -23,6 +22,7 @@ import java.util.Arrays;
 
 public class Sm4CbcUtils {
     private static final Logger logger = LoggerFactory.getLogger(Sm4CbcUtils.class);
+    private static final SecureRandom SECURE_RANDOM = new SecureRandom();
 
     /**
      * SM4密钥长度：16字节（128位，国密标准）
@@ -47,7 +47,7 @@ public class Sm4CbcUtils {
      */
     public static byte[] key() {
         byte[] key = new byte[SM4_KEY_LENGTH];
-        new SecureRandom().nextBytes(key);
+        SECURE_RANDOM.nextBytes(key);
         return key;
     }
 
@@ -60,7 +60,7 @@ public class Sm4CbcUtils {
      */
     public static byte[] iv() {
         byte[] iv = new byte[SM4_IV_LENGTH];
-        new SecureRandom().nextBytes(iv);
+        SECURE_RANDOM.nextBytes(iv);
         return iv;
     }
 

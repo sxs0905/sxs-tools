@@ -20,6 +20,12 @@ public class DateFormatConstants {
     public static final String ISO_8601_WITH_MILLIS = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'";
     // UTC格式，带时区信息
     public static final String UTC = "yyyy-MM-dd'T'HH:mm:ss.SSSXXX";
+    // ISO 8601标准格式，带时区偏移（例如：2024-01-15T14:30:45+08:00）
+    public static final String ISO_8601_WITH_OFFSET = "yyyy-MM-dd'T'HH:mm:ssXXX";
+    // ISO 8601紧凑格式（例如：20240115T143045Z）
+    public static final String ISO_8601_BASIC = "yyyyMMdd'T'HHmmss'Z'";
+    // RFC 1123格式（例如：Mon, 15 Jan 2024 14:30:45 GMT）
+    public static final String RFC_1123 = "EEE, dd MMM yyyy HH:mm:ss z";
     
     /**
      * 常用英文格式组
@@ -31,6 +37,14 @@ public class DateFormatConstants {
     public static final String MM_DD_YYYY = "MM-dd-yyyy";
     // 日-月-年格式 (例如：15-01-2024)
     public static final String DD_MM_YYYY = "dd-MM-yyyy";
+    // 年-月格式 (例如：2024-01)
+    public static final String YYYY_MM = "yyyy-MM";
+    // 年格式 (例如：2024)
+    public static final String YYYY = "yyyy";
+    // 月-日格式 (例如：01-15)
+    public static final String MM_DD = "MM-dd";
+    // 日-月格式 (例如：15-01)
+    public static final String DD_MM = "dd-MM";
     
     /**
      * 带斜杠的日期格式组
@@ -42,6 +56,23 @@ public class DateFormatConstants {
     public static final String MM_SLASH_DD_SLASH_YYYY = "MM/dd/yyyy";
     // 日/月/年格式 (例如：15/01/2024)
     public static final String DD_SLASH_MM_SLASH_YYYY = "dd/MM/yyyy";
+    // 年/月格式 (例如：2024/01)
+    public static final String YYYY_SLASH_MM = "yyyy/MM";
+    // 月/日格式 (例如：01/15)
+    public static final String MM_SLASH_DD = "MM/dd";
+    // 日/月格式 (例如：15/01)
+    public static final String DD_SLASH_MM = "dd/MM";
+
+    /**
+     * 点分隔日期格式组
+     * 使用英文句点作为日期分隔符
+     */
+    // 年.月.日格式 (例如：2024.01.15)
+    public static final String YYYY_DOT_MM_DOT_DD = "yyyy.MM.dd";
+    // 月.日.年格式 (例如：01.15.2024)
+    public static final String MM_DOT_DD_DOT_YYYY = "MM.dd.yyyy";
+    // 日.月.年格式 (例如：15.01.2024)
+    public static final String DD_DOT_MM_DOT_YYYY = "dd.MM.yyyy";
     
     /**
      * 日期时间格式组
@@ -59,6 +90,18 @@ public class DateFormatConstants {
     public static final String MM_DD_YYYY_HH_MM_SS = "MM-dd-yyyy HH:mm:ss";
     // 日-月-年 时:分:秒格式 (例如：15-01-2024 14:30:45)
     public static final String DD_MM_YYYY_HH_MM_SS = "dd-MM-yyyy HH:mm:ss";
+    // 年-月-日 时:分格式 (例如：2024-01-15 14:30)
+    public static final String YYYY_MM_DD_HH_MM = "yyyy-MM-dd HH:mm";
+    // 年-月-日 时:分:秒.毫秒格式 (例如：2024-01-15 14:30:45.123)
+    public static final String YYYY_MM_DD_HH_MM_SS_SSS = "yyyy-MM-dd HH:mm:ss.SSS";
+    // 年/月/日 时:分格式 (例如：2024/01/15 14:30)
+    public static final String YYYY_SLASH_MM_SLASH_DD_HH_MM = "yyyy/MM/dd HH:mm";
+    // 年/月/日 时:分:秒.毫秒格式 (例如：2024/01/15 14:30:45.123)
+    public static final String YYYY_SLASH_MM_SLASH_DD_HH_MM_SS_SSS = "yyyy/MM/dd HH:mm:ss.SSS";
+    // 年.月.日 时:分:秒格式 (例如：2024.01.15 14:30:45)
+    public static final String YYYY_DOT_MM_DOT_DD_HH_MM_SS = "yyyy.MM.dd HH:mm:ss";
+    // 年.月.日 时:分格式 (例如：2024.01.15 14:30)
+    public static final String YYYY_DOT_MM_DOT_DD_HH_MM = "yyyy.MM.dd HH:mm";
     
     /**
      * 紧凑格式组
@@ -66,8 +109,12 @@ public class DateFormatConstants {
      */
     // 紧凑年月日格式 (例如：20240115)
     public static final String YYYYMMDD = "yyyyMMdd";
+    // 紧凑年月格式 (例如：202401)
+    public static final String YYYYMM = "yyyyMM";
     // 紧凑年月日时分秒格式 (例如：20240115143045)
     public static final String YYYYMMDDHHMMSS = "yyyyMMddHHmmss";
+    // 紧凑年月日时分格式 (例如：202401151430)
+    public static final String YYYYMMDDHHMM = "yyyyMMddHHmm";
     // 带毫秒的紧凑格式 (例如：20240115143045123)
     public static final String YYYYMMDDHHMMSSSSS = "yyyyMMddHHmmssSSS";
     
@@ -77,6 +124,8 @@ public class DateFormatConstants {
      */
     // 中文年月日格式 (例如：2024年01月15日)
     public static final String CHINESE_YYYY_MM_DD = "yyyy年MM月dd日";
+    // 中文年月日格式（单数字月日）(例如：2024年1月5日)
+    public static final String CHINESE_YYYY_M_D = "yyyy年M月d日";
     // 中文月日年格式 (例如：01月15日2024年)
     public static final String CHINESE_MM_DD_YYYY = "MM月dd日yyyy年";
     // 中文日月年格式 (例如：15日01月2024年)
@@ -87,12 +136,22 @@ public class DateFormatConstants {
     public static final String CHINESE_YYYY_MM_DD_HH_MM_SS = "yyyy年MM月dd日 HH:mm:ss";
     // 中文年月格式 (例如：2024年01月)
     public static final String CHINESE_YEAR_MONTH = "yyyy年MM月";
+    // 中文年份格式 (例如：2024年)
+    public static final String CHINESE_YEAR = "yyyy年";
     // 中文月日格式 (例如：01月15日)
     public static final String CHINESE_MONTH_DAY = "MM月dd日";
+    // 中文月日格式（单数字月日）(例如：1月5日)
+    public static final String CHINESE_M_D = "M月d日";
     // 中文完整日期时间格式 (例如：2024年01月15日 14时30分45秒)
     public static final String CHINESE_FULL_DATE_TIME = "yyyy年MM月dd日 HH时mm分ss秒";
     // 带毫秒的中文完整格式 (例如：2024年01月15日 14时30分45秒123毫秒)
     public static final String CHINESE_FULL_DATE_TIME_WITH_MILLIS = "yyyy年MM月dd日 HH时mm分ss秒SSS毫秒";
+    // 中文年月日时分秒格式（无空格）(例如：2024年01月15日14时30分45秒)
+    public static final String CHINESE_YYYY_MM_DD_HH_MM_SS_NO_BLANK = "yyyy年MM月dd日HH时mm分ss秒";
+    // 中文年月日时分格式（中文时分）(例如：2024年01月15日 14时30分)
+    public static final String CHINESE_YYYY_MM_DD_HH_MM_CN = "yyyy年MM月dd日 HH时mm分";
+    // 中文年月日时分秒毫秒格式（冒号时间）(例如：2024年01月15日 14:30:45.123)
+    public static final String CHINESE_YYYY_MM_DD_HH_MM_SS_SSS = "yyyy年MM月dd日 HH:mm:ss.SSS";
     
     /**
      * 英语文本格式组
@@ -106,6 +165,10 @@ public class DateFormatConstants {
     public static final String ENGLISH_FULL_MONTH_DD_YYYY = "MMMM dd, yyyy";
     // 英文日月(完整)年格式 (例如：15 January 2024)
     public static final String ENGLISH_DD_FULL_MONTH_YYYY = "dd MMMM yyyy";
+    // 英文星期, 月(缩写)日 年格式 (例如：Mon, Jan 15 2024)
+    public static final String ENGLISH_EEE_MMM_DD_YYYY = "EEE, MMM dd yyyy";
+    // 英文星期, 月(完整)日, 年格式 (例如：Monday, January 15, 2024)
+    public static final String ENGLISH_EEEE_MMMM_DD_YYYY = "EEEE, MMMM dd, yyyy";
     
     /**
      * 短格式组
@@ -149,6 +212,12 @@ public class DateFormatConstants {
     public static final String CHINESE_HH_MM_SS = "HH时mm分ss秒";
     // 中文时分格式 (例如：14时30分)
     public static final String CHINESE_HH_MM = "HH时mm分";
+    // 24小时制时分秒毫秒格式 (例如：14:30:45.123)
+    public static final String HH_MM_SS_SSS = "HH:mm:ss.SSS";
+    // 紧凑时分秒格式 (例如：143045)
+    public static final String HHMMSS = "HHmmss";
+    // 紧凑时分格式 (例如：1430)
+    public static final String HHMM = "HHmm";
     
     /**
      * 所有日期格式列表
@@ -160,42 +229,72 @@ public class DateFormatConstants {
         ISO_8601,
         ISO_8601_WITH_MILLIS,
         UTC,
+        ISO_8601_WITH_OFFSET,
+        ISO_8601_BASIC,
+        RFC_1123,
         
         // 常用英文格式
         YYYY_MM_DD,
         MM_DD_YYYY,
         DD_MM_YYYY,
+        YYYY_MM,
+        YYYY,
+        MM_DD,
+        DD_MM,
         // 带斜杠的格式
         YYYY_SLASH_MM_SLASH_DD,
         MM_SLASH_DD_SLASH_YYYY,
         DD_SLASH_MM_SLASH_YYYY,
+        YYYY_SLASH_MM,
+        MM_SLASH_DD,
+        DD_SLASH_MM,
+        // 点分隔格式
+        YYYY_DOT_MM_DOT_DD,
+        MM_DOT_DD_DOT_YYYY,
+        DD_DOT_MM_DOT_YYYY,
         YYYY_MM_DD_HH_MM_SS,
+        YYYY_MM_DD_HH_MM,
+        YYYY_MM_DD_HH_MM_SS_SSS,
         // 带斜杠和时间的格式
         YYYY_SLASH_MM_SLASH_DD_HH_MM_SS,
+        YYYY_SLASH_MM_SLASH_DD_HH_MM,
+        YYYY_SLASH_MM_SLASH_DD_HH_MM_SS_SSS,
         MM_SLASH_DD_SLASH_YYYY_HH_MM_SS,
         DD_SLASH_MM_SLASH_YYYY_HH_MM_SS,
         MM_DD_YYYY_HH_MM_SS,
         DD_MM_YYYY_HH_MM_SS,
+        YYYY_DOT_MM_DOT_DD_HH_MM_SS,
+        YYYY_DOT_MM_DOT_DD_HH_MM,
+        YYYYMM,
         YYYYMMDD,
+        YYYYMMDDHHMM,
         YYYYMMDDHHMMSS,
         YYYYMMDDHHMMSSSSS,
         
         // 中文格式
         CHINESE_YYYY_MM_DD,
+        CHINESE_YYYY_M_D,
         CHINESE_MM_DD_YYYY,
         CHINESE_DD_MM_YYYY,
         CHINESE_YYYY_MM_DD_HH_MM,
         CHINESE_YYYY_MM_DD_HH_MM_SS,
         CHINESE_YEAR_MONTH,
+        CHINESE_YEAR,
         CHINESE_MONTH_DAY,
+        CHINESE_M_D,
         CHINESE_FULL_DATE_TIME,
         CHINESE_FULL_DATE_TIME_WITH_MILLIS,
+        CHINESE_YYYY_MM_DD_HH_MM_SS_NO_BLANK,
+        CHINESE_YYYY_MM_DD_HH_MM_CN,
+        CHINESE_YYYY_MM_DD_HH_MM_SS_SSS,
         
         // 其他语言格式
         ENGLISH_MMM_DD_YYYY,
         ENGLISH_DD_MMM_YYYY,
         ENGLISH_FULL_MONTH_DD_YYYY,
         ENGLISH_DD_FULL_MONTH_YYYY,
+        ENGLISH_EEE_MMM_DD_YYYY,
+        ENGLISH_EEEE_MMMM_DD_YYYY,
         
         // 短格式
         YY_MM_DD,
@@ -215,7 +314,10 @@ public class DateFormatConstants {
         HH_MM_SS_12H,
         HH_MM_12H,
         CHINESE_HH_MM_SS,
-        CHINESE_HH_MM
+        CHINESE_HH_MM,
+        HH_MM_SS_SSS,
+        HHMMSS,
+        HHMM
     );
     
     /**

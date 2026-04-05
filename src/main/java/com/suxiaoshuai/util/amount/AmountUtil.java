@@ -106,6 +106,20 @@ public class AmountUtil {
 
     private static final String LAST_SHOW_ = "整";
 
+    private static final Pattern MILLION_UP_PATTERN = Pattern.compile("(万万亿|亿亿|万亿|亿|万)");
+    private static final Pattern PART_PATTERN = Pattern.compile("[拾佰仟元]");
+    private static final Pattern POINT_PATTERN = Pattern.compile("[角|分]");
+
+    private static final BigDecimal TEN = new BigDecimal("10");
+    private static final BigDecimal HUNDRED = new BigDecimal("100");
+    private static final BigDecimal THOUSAND = new BigDecimal("1000");
+    private static final BigDecimal TEN_THOUSAND = new BigDecimal("10000");
+    private static final BigDecimal ONE_HUNDRED_MILLION = new BigDecimal("100000000");
+    private static final BigDecimal ONE_TRILLION = new BigDecimal("1000000000000");
+    private static final BigDecimal TEN_QUADRILLION = new BigDecimal("10000000000000000");
+    private static final BigDecimal POINT_ONE = new BigDecimal("0.1");
+    private static final BigDecimal POINT_ZERO_ONE = new BigDecimal("0.01");
+
 
     private static final ThreadLocal<DecimalFormat> DECIMAL_FORMAT = ThreadLocal.withInitial(() -> {
         /*
@@ -360,8 +374,7 @@ public class AmountUtil {
     private static Pair<Integer, BigDecimal> handleMillionUp(String part) {
         BigDecimal result = BigDecimal.ZERO;
         BigDecimal temp;
-        Pattern pattern = Pattern.compile("(万万亿|亿亿|万亿|亿|万)");
-        Matcher matcher = pattern.matcher(part);
+        Matcher matcher = MILLION_UP_PATTERN.matcher(part);
         int index = 0;
         while (matcher.find()) {
             String digitString = part.substring(index, matcher.start());
@@ -369,13 +382,13 @@ public class AmountUtil {
             temp = pair.getRight();
             String group = matcher.group();
             if (group.equals("亿亿") || group.equals("万万亿")) {
-                result = result.add(temp.multiply(new BigDecimal("10000000000000000")));
+                result = result.add(temp.multiply(TEN_QUADRILLION));
             } else if (group.equals("万亿")) {
-                result = result.add(temp.multiply(new BigDecimal("1000000000000")));
+                result = result.add(temp.multiply(ONE_TRILLION));
             } else if (group.equals(AMOUNT_UNITS[8])) {
-                result = result.add(temp.multiply(new BigDecimal("100000000")));
+                result = result.add(temp.multiply(ONE_HUNDRED_MILLION));
             } else if (group.equals(AMOUNT_UNITS[4])) {
-                result = result.add(temp.multiply(new BigDecimal("10000")));
+                result = result.add(temp.multiply(TEN_THOUSAND));
             }
             index = matcher.end();
         }
@@ -391,8 +404,7 @@ public class AmountUtil {
     private static Pair<Integer, BigDecimal> handlePart(String part) {
         BigDecimal result = BigDecimal.ZERO;
         BigDecimal temp;
-        Pattern pattern = Pattern.compile("[拾佰仟元]");
-        Matcher matcher = pattern.matcher(part);
+        Matcher matcher = PART_PATTERN.matcher(part);
         int index = 0;
         int lastMatchEnd = 0;
 
@@ -400,11 +412,11 @@ public class AmountUtil {
             String digitString = part.substring(index, matcher.start());
             temp = new BigDecimal(String.valueOf(handleDigit(digitString)));
             if (matcher.group().equals(AMOUNT_UNITS[1])) {
-                result = result.add(temp.multiply(new BigDecimal("10")));
+                result = result.add(temp.multiply(TEN));
             } else if (matcher.group().equals(AMOUNT_UNITS[2])) {
-                result = result.add(temp.multiply(new BigDecimal("100")));
+                result = result.add(temp.multiply(HUNDRED));
             } else if (matcher.group().equals(AMOUNT_UNITS[3])) {
-                result = result.add(temp.multiply(new BigDecimal("1000")));
+                result = result.add(temp.multiply(THOUSAND));
             } else if (matcher.group().equals(AMOUNT_UNITS[0])) {
                 result = result.add(temp);
             }
@@ -425,17 +437,16 @@ public class AmountUtil {
     private static BigDecimal handlePointPart(String part) {
         BigDecimal result = BigDecimal.ZERO;
         BigDecimal temp;
-        Pattern patternPoint = Pattern.compile("[角|分]");
-        Matcher matcherPoint = patternPoint.matcher(part);
+        Matcher matcherPoint = POINT_PATTERN.matcher(part);
         int indexPoint = 0;
         while (matcherPoint.find()) {
             String digitString = part.substring(indexPoint, matcherPoint.start());
             temp = new BigDecimal(String.valueOf(handleDigit(digitString)));
             if (matcherPoint.group().equals(DECIMAL_UNITS[0])) {
 
-                result = result.add(temp.multiply(new BigDecimal("0.1")));
+                result = result.add(temp.multiply(POINT_ONE));
             } else if (matcherPoint.group().equals(DECIMAL_UNITS[1])) {
-                result = result.add(temp.multiply(new BigDecimal("0.01")));
+                result = result.add(temp.multiply(POINT_ZERO_ONE));
             }
             indexPoint = matcherPoint.end();
         }

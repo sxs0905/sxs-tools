@@ -11,6 +11,8 @@ import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.time.temporal.ChronoUnit;
 import java.util.Date;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class LocalDateUtil {
 
@@ -35,12 +37,18 @@ public class LocalDateUtil {
             "11", "12", "13", "14", "15", "16", "17", "18", "19", "20", "21", "22", "23",
             "24", "25", "26", "27", "28", "29", "30", "31"};
 
+    private static final Map<String, DateTimeFormatter> FORMATTER_CACHE = new ConcurrentHashMap<>();
+
+    private static DateTimeFormatter formatterOf(String format) {
+        return FORMATTER_CACHE.computeIfAbsent(format, DateTimeFormatter::ofPattern);
+    }
+
     public static String format(LocalDateTime localDateTime, String format) {
         if (localDateTime == null) {
             return null;
         }
         format = StringUtil.isBlank(format) ? DEFAULT_FORMAT : format;
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern(format);
+        DateTimeFormatter formatter = formatterOf(format);
         return localDateTime.format(formatter);
     }
 
@@ -62,7 +70,7 @@ public class LocalDateUtil {
         if (localDateTime == null) {
             return null;
         }
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern(DEFAULT_YMD_LONG);
+        DateTimeFormatter formatter = formatterOf(DEFAULT_YMD_LONG);
         return Integer.parseInt(localDateTime.format(formatter));
     }
 
@@ -98,14 +106,15 @@ public class LocalDateUtil {
         }
         format = StringUtil.isBlank(format) ? DEFAULT_FORMAT : format;
 
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern(format);
-        if (isDate(localDateTime)) {
+        DateTimeFormatter formatter = formatterOf(format);
+        try {
+            if (localDateTime.indexOf(':') >= 0 || localDateTime.indexOf('T') >= 0 || localDateTime.indexOf('时') >= 0) {
+                return LocalDateTime.parse(localDateTime, formatter);
+            }
             return LocalDate.parse(localDateTime, formatter).atStartOfDay();
+        } catch (DateTimeParseException e) {
+            return null;
         }
-        if (isDateTime(localDateTime)) {
-            return LocalDateTime.parse(localDateTime, formatter);
-        }
-        return null;
     }
 
     public static LocalDate parseDefaultDate(String localDate) {
@@ -118,28 +127,11 @@ public class LocalDateUtil {
         }
         format = StringUtil.isBlank(format) ? DEFAULT_YMD : format;
 
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern(format);
-        if (isDate(localDate)) {
+        DateTimeFormatter formatter = formatterOf(format);
+        try {
             return LocalDate.parse(localDate, formatter);
-        }
-        return null;
-    }
-
-    private static boolean isDate(String dateStr) {
-        try {
-            LocalDate.parse(dateStr, DateTimeFormatter.ISO_LOCAL_DATE);
-            return true;
         } catch (DateTimeParseException e) {
-            return false;
-        }
-    }
-
-    private static boolean isDateTime(String dateTimeStr) {
-        try {
-            LocalDateTime.parse(dateTimeStr, DateTimeFormatter.ISO_LOCAL_DATE_TIME);
-            return true;
-        } catch (DateTimeParseException e) {
-            return false;
+            return null;
         }
     }
 

@@ -4,15 +4,20 @@ package com.suxiaoshuai.util.date;
 import com.suxiaoshuai.constants.DateFormatConstants;
 import com.suxiaoshuai.exception.SxsToolsException;
 import org.apache.commons.collections4.CollectionUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Queue;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
 /**
  * 日期工具类
@@ -28,8 +33,6 @@ import java.util.List;
  * @since 1.0.0
  */
 public class DateUtil {
-
-    private static final Logger logger = LoggerFactory.getLogger(DateUtil.class);
     /**
      * 1秒 = 1000毫秒
      */
@@ -59,6 +62,37 @@ public class DateUtil {
      */
     public static final String DEFAULT_YMD = DateFormatConstants.YYYY_MM_DD;
 
+    private static final int FLAG_CHINESE = 1;
+    private static final int FLAG_SLASH = 1 << 1;
+    private static final int FLAG_DASH = 1 << 2;
+    private static final int FLAG_DOT = 1 << 3;
+    private static final int FLAG_T = 1 << 4;
+    private static final int FLAG_COMMA = 1 << 5;
+    private static final int FLAG_AMPM = 1 << 6;
+
+    /**
+     * 默认日期格式集合（不可变）
+     */
+    private static final List<String> DEFAULT_DATE_PATTERNS =
+            Collections.unmodifiableList(new ArrayList<>(DateFormatConstants.getAllDateFormats()));
+
+    /**
+     * 预编译后的格式特征列表
+     */
+    private static final List<PatternProfile> DEFAULT_PATTERN_PROFILES = buildPatternProfiles(DEFAULT_DATE_PATTERNS);
+
+    /**
+     * 输入签名缓存，加速重复形态的字符串解析
+     */
+    private static final Map<Integer, List<String>> SIGNATURE_PATTERN_CACHE = new ConcurrentHashMap<>();
+
+    /**
+     * 缓存key队列，用于增量淘汰，避免全量clear导致抖动
+     */
+    private static final Queue<Integer> SIGNATURE_CACHE_KEYS = new ConcurrentLinkedQueue<>();
+
+    private static final int SIGNATURE_CACHE_LIMIT = 512;
+
     /**
      * 按照指定格式格式化日期
      *
@@ -78,7 +112,7 @@ public class DateUtil {
      * @return 解析后的日期
      */
     public static Date parse(String date) {
-        return parse(date, new ArrayList<>());
+        return parse(date, Collections.emptyList());
     }
 
     /**
@@ -101,18 +135,213 @@ public class DateUtil {
      * @throws SxsToolsException 如果无法用任何格式解析日期
      */
     public static Date parse(String date, List<String> datePartnerList) {
-        List<String> partnerList = DateFormatConstants.datePartnerList;
-        if (CollectionUtils.isNotEmpty(datePartnerList)) {
-            partnerList.addAll(datePartnerList);
+        if (date == null) {
+            return null;
         }
-        for (String format : partnerList) {
-            try {
-                return ThreadSafeDateUtil.parse(date, format);
-            } catch (Exception e) {
-                logger.debug("parse date {} with format {} failed", date, format, e);
+        String input = date.trim();
+        if (input.isEmpty()) {
+            return null;
+        }
+
+        List<String> candidates = collectCandidatePatterns(input);
+        if (CollectionUtils.isNotEmpty(datePartnerList)) {
+            LinkedHashSet<String> mergedCandidates = new LinkedHashSet<>(candidates);
+            mergedCandidates.addAll(datePartnerList);
+            for (String format : mergedCandidates) {
+                Date parsed = ThreadSafeDateUtil.parse(input, format);
+                if (parsed != null) {
+                    return parsed;
+                }
+            }
+        } else {
+            for (String format : candidates) {
+                Date parsed = ThreadSafeDateUtil.parse(input, format);
+                if (parsed != null) {
+                    return parsed;
+                }
             }
         }
-        throw new SxsToolsException("【" + date + "】 date format not support");
+        throw new SxsToolsException("【" + input + "】 date format not support");
+    }
+
+    private static List<String> collectCandidatePatterns(String input) {
+        int inputFlags = buildInputFlags(input);
+        int signature = buildSignature(input.length(), inputFlags);
+
+        List<String> cachedPatterns = SIGNATURE_PATTERN_CACHE.get(signature);
+        if (CollectionUtils.isNotEmpty(cachedPatterns)) {
+            return cachedPatterns;
+        }
+
+        LinkedHashSet<String> exactMatched = new LinkedHashSet<>();
+        LinkedHashSet<String> lengthMatched = new LinkedHashSet<>();
+        for (PatternProfile profile : DEFAULT_PATTERN_PROFILES) {
+            if (profile.length >= 0 && profile.length != input.length()) {
+                continue;
+            }
+            lengthMatched.add(profile.pattern);
+            if (profile.flags == inputFlags) {
+                exactMatched.add(profile.pattern);
+            }
+        }
+
+        LinkedHashSet<String> result = exactMatched.isEmpty() ? lengthMatched : exactMatched;
+        if (result.isEmpty()) {
+            result.addAll(DEFAULT_DATE_PATTERNS);
+        }
+
+        List<String> resolved = Collections.unmodifiableList(new ArrayList<>(result));
+        cacheSignaturePatterns(signature, resolved);
+        return resolved;
+    }
+
+    private static void cacheSignaturePatterns(int signature, List<String> patterns) {
+        List<String> existing = SIGNATURE_PATTERN_CACHE.putIfAbsent(signature, patterns);
+        if (existing != null) {
+            return;
+        }
+        SIGNATURE_CACHE_KEYS.offer(signature);
+        while (SIGNATURE_PATTERN_CACHE.size() > SIGNATURE_CACHE_LIMIT) {
+            Integer oldKey = SIGNATURE_CACHE_KEYS.poll();
+            if (oldKey == null) {
+                break;
+            }
+            SIGNATURE_PATTERN_CACHE.remove(oldKey);
+        }
+    }
+
+    private static int buildInputFlags(String input) {
+        int flags = 0;
+        if (containsAny(input, '年', '月', '日', '时', '分', '秒')) {
+            flags |= FLAG_CHINESE;
+        }
+        if (input.indexOf('/') >= 0) {
+            flags |= FLAG_SLASH;
+        }
+        if (input.indexOf('-') >= 0) {
+            flags |= FLAG_DASH;
+        }
+        if (input.indexOf('.') >= 0) {
+            flags |= FLAG_DOT;
+        }
+        if (input.indexOf('T') >= 0) {
+            flags |= FLAG_T;
+        }
+        if (input.indexOf(',') >= 0) {
+            flags |= FLAG_COMMA;
+        }
+        String lower = input.toLowerCase(Locale.ROOT);
+        if (lower.contains(" am") || lower.contains(" pm") || lower.endsWith("am") || lower.endsWith("pm")
+                || input.contains("上午") || input.contains("下午")) {
+            flags |= FLAG_AMPM;
+        }
+        return flags;
+    }
+
+    private static int buildPatternFlags(String pattern) {
+        int flags = 0;
+        if (containsAny(pattern, '年', '月', '日', '时', '分', '秒')) {
+            flags |= FLAG_CHINESE;
+        }
+        if (pattern.indexOf('/') >= 0) {
+            flags |= FLAG_SLASH;
+        }
+        if (pattern.indexOf('-') >= 0) {
+            flags |= FLAG_DASH;
+        }
+        if (pattern.indexOf('.') >= 0) {
+            flags |= FLAG_DOT;
+        }
+        if (pattern.indexOf('T') >= 0) {
+            flags |= FLAG_T;
+        }
+        if (pattern.indexOf(',') >= 0) {
+            flags |= FLAG_COMMA;
+        }
+        if (pattern.indexOf('a') >= 0) {
+            flags |= FLAG_AMPM;
+        }
+        return flags;
+    }
+
+    private static int buildSignature(int length, int flags) {
+        return (length << 8) | flags;
+    }
+
+    private static boolean containsAny(String source, char... chars) {
+        for (char c : chars) {
+            if (source.indexOf(c) >= 0) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private static List<PatternProfile> buildPatternProfiles(List<String> patterns) {
+        List<PatternProfile> profiles = new ArrayList<>(patterns.size());
+        for (String pattern : patterns) {
+            int length = estimatePatternLength(pattern);
+            profiles.add(new PatternProfile(pattern, buildPatternFlags(pattern), length));
+        }
+        return profiles;
+    }
+
+    private static int estimatePatternLength(String pattern) {
+        if (isVariableLengthPattern(pattern)) {
+            return -1;
+        }
+        int length = 0;
+        boolean inQuote = false;
+        for (int i = 0; i < pattern.length(); i++) {
+            char ch = pattern.charAt(i);
+            if (ch == '\'') {
+                inQuote = !inQuote;
+                continue;
+            }
+            if (inQuote) {
+                length++;
+                continue;
+            }
+            if (Character.isLetter(ch)) {
+                if (ch == 'a') {
+                    length += 2;
+                } else if (ch == 'X') {
+                    int run = 1;
+                    while (i + 1 < pattern.length() && pattern.charAt(i + 1) == 'X') {
+                        run++;
+                        i++;
+                    }
+                    length += run == 3 ? 6 : run;
+                } else if (ch == 'Z') {
+                    length += 1;
+                } else {
+                    length++;
+                    while (i + 1 < pattern.length() && pattern.charAt(i + 1) == ch) {
+                        i++;
+                    }
+                }
+            } else {
+                length++;
+            }
+        }
+        return length;
+    }
+
+    private static boolean isVariableLengthPattern(String pattern) {
+        return pattern.contains("MMM") || pattern.contains("EEEE") || pattern.contains("EEE")
+                || pattern.contains("MMMM") || pattern.contains(" z") || pattern.endsWith("z");
+    }
+
+    private static final class PatternProfile {
+        private final String pattern;
+        private final int flags;
+        private final int length;
+
+        private PatternProfile(String pattern, int flags, int length) {
+            this.pattern = pattern;
+            this.flags = flags;
+            this.length = length;
+        }
     }
 
     /**

@@ -470,14 +470,14 @@ public class RsaUtil {
             cipher.init(mode, privateKey);
             // 分段加密
             int blockSize = (mode == Cipher.ENCRYPT_MODE) ? RsaConst.ENCRYPT_KEYSIZE : RsaConst.DECRYPT_KEYSIZE;
-            byte[] decryptData = null;
-
-            for (int i = 0; i < srcData.length; i += blockSize) {
-                byte[] doFinal = cipher.doFinal(subarray(srcData, i, i + blockSize));
-
-                decryptData = addAll(decryptData, doFinal);
+            try (ByteArrayOutputStream outputStream = new ByteArrayOutputStream()) {
+                for (int i = 0; i < srcData.length; i += blockSize) {
+                    int currentBlockSize = Math.min(blockSize, srcData.length - i);
+                    byte[] doFinal = cipher.doFinal(srcData, i, currentBlockSize);
+                    outputStream.write(doFinal);
+                }
+                return outputStream.toByteArray();
             }
-            return decryptData;
         } catch (NoSuchAlgorithmException e) {
             log.error("私钥算法-不存在的解密算法:", e);
         } catch (NoSuchPaddingException e) {
@@ -508,13 +508,15 @@ public class RsaUtil {
             cipher.init(mode, publicKey);
             // 分段加密
             int blockSize = (mode == Cipher.ENCRYPT_MODE) ? RsaConst.ENCRYPT_KEYSIZE : RsaConst.DECRYPT_KEYSIZE;
-            byte[] encryptedData = null;
-            for (int i = 0; i < srcData.length; i += blockSize) {
-                // 注意要使用2的倍数，否则会出现加密后的内容再解密时为乱码
-                byte[] doFinal = cipher.doFinal(subarray(srcData, i, i + blockSize));
-                encryptedData = addAll(encryptedData, doFinal);
+            try (ByteArrayOutputStream outputStream = new ByteArrayOutputStream()) {
+                for (int i = 0; i < srcData.length; i += blockSize) {
+                    // 注意要使用2的倍数，否则会出现加密后的内容再解密时为乱码
+                    int currentBlockSize = Math.min(blockSize, srcData.length - i);
+                    byte[] doFinal = cipher.doFinal(srcData, i, currentBlockSize);
+                    outputStream.write(doFinal);
+                }
+                return outputStream.toByteArray();
             }
-            return encryptedData;
 
         } catch (NoSuchAlgorithmException e) {
             log.error("公钥算法-不存在的解密算法:", e);

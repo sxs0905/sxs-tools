@@ -1,4 +1,4 @@
-package com.suxiaoshuai.util.httpclient;
+package com.suxiaoshuai.util.http;
 
 
 import com.suxiaoshuai.util.string.StringUtil;
@@ -24,6 +24,8 @@ public class HttpUtils {
 
     private static final Logger logger = LoggerFactory.getLogger(HttpUtils.class);
     private static volatile OkHttpClient okHttpClient = null;
+    private static final MediaType JSON_MEDIA_TYPE = MediaType.parse("application/json; charset=utf-8");
+    private static final String USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.77 Safari/537.36";
     /**
      * HTTP 请求超时时间，单位：秒
      */
@@ -78,19 +80,25 @@ public class HttpUtils {
      * @return 请求结果
      */
     public static String get(String url, Map<String, String> paramMap, Map<String, String> headerMap) {
-        logger.info("okhttp get url:{}, paramMap:{}, headerMap:{}", url, paramMap, headerMap);
+        if (logger.isDebugEnabled()) {
+            logger.debug("okhttp get url:{}, paramMap:{}, headerMap:{}", url, paramMap, headerMap);
+        }
         String result = null;
         try {
             Request.Builder request = new Request.Builder().get();
             addGetHeader(request, headerMap);
             String finalUrl = getUrl(url, paramMap);
-            logger.info("okhttp get url:{}, add param final url:{}", url, finalUrl);
+            if (logger.isDebugEnabled()) {
+                logger.debug("okhttp get url:{}, add param final url:{}", url, finalUrl);
+            }
             request.url(finalUrl);
             result = doExecute(request);
         } catch (Exception e) {
             logger.error("okHttpUtils get url:{}, error", url, e);
         }
-        logger.info("okhttp get url:{},result:{}", url, result);
+        if (logger.isDebugEnabled()) {
+            logger.debug("okhttp get url:{},result:{}", url, result);
+        }
         return result;
     }
 
@@ -114,17 +122,21 @@ public class HttpUtils {
      * @return 请求结果
      */
     public static String post(String url, String json, Map<String, String> headerMap) {
-        logger.info("okhttp post json url:{}, body:{}, headerMap:{}", url, json, headerMap);
+        if (logger.isDebugEnabled()) {
+            logger.debug("okhttp post json url:{}, body:{}, headerMap:{}", url, json, headerMap);
+        }
         String result = null;
         try {
-            RequestBody requestBody = RequestBody.create(json, MediaType.parse("application/json; charset=utf-8"));
+            RequestBody requestBody = RequestBody.create(json, JSON_MEDIA_TYPE);
             Request.Builder request = new Request.Builder().post(requestBody).url(url);
             addHeader(request, headerMap);
             result = doExecute(request);
         } catch (Exception e) {
             logger.error("okHttpUtils post json url:{}, error", url, e);
         }
-        logger.info("okhttp post json url:{},result:{}", url, result);
+        if (logger.isDebugEnabled()) {
+            logger.debug("okhttp post json url:{},result:{}", url, result);
+        }
         return result;
     }
 
@@ -148,7 +160,9 @@ public class HttpUtils {
      * @return 请求结果
      */
     public static String postForm(String url, Map<String, String> paramsMap, Map<String, String> headerMap) {
-        logger.info("okhttp post form url:{}, body:{}, headerMap:{}", url, paramsMap, headerMap);
+        if (logger.isDebugEnabled()) {
+            logger.debug("okhttp post form url:{}, body:{}, headerMap:{}", url, paramsMap, headerMap);
+        }
         String result = null;
         try {
             FormBody.Builder formBody = new FormBody.Builder();
@@ -162,7 +176,9 @@ public class HttpUtils {
         } catch (Exception e) {
             logger.error("okHttpUtils post form url:{}, error", url, e);
         }
-        logger.info("okhttp post form url:{},result:{}", url, result);
+        if (logger.isDebugEnabled()) {
+            logger.debug("okhttp post form url:{},result:{}", url, result);
+        }
         return result;
     }
 
@@ -208,7 +224,7 @@ public class HttpUtils {
         if (request == null) {
             return;
         }
-        request.addHeader("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.77 Safari/537.36");
+        request.addHeader("User-Agent", USER_AGENT);
         request.addHeader("Accept", "*/*");
         if (headerMap == null || headerMap.isEmpty()) {
             return;

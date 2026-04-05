@@ -38,7 +38,7 @@ public class ZipUtil {
     /**
      * 文件读取缓冲区大小
      */
-    private static final int CACHE_SIZE = 1024;
+    private static final int CACHE_SIZE = 8192;
 
     /**
      * 将指定目录下的文件打包成 ZIP 文件
@@ -50,8 +50,6 @@ public class ZipUtil {
      * @throws SxsToolsException 当源路径或目标路径为空，或目标路径在源路径下时抛出异常
      */
     public static void zip(String sourcePath, String zipPath, String fileName, String charSet) {
-        FileOutputStream fos = null;
-        ZipOutputStream zos = null;
         try {
             if (StringUtil.isBlank(sourcePath) || StringUtil.isBlank(zipPath)) {
                 throw new SxsToolsException("zip file path not exist");
@@ -75,23 +73,14 @@ public class ZipUtil {
                     }
                 }
             }
-            fos = new FileOutputStream(zipPath + File.separator + fileName + ZIP_FILE);
-            zos = new ZipOutputStream(fos);
-            if (StringUtil.isBlank(charSet)) {
-                charSet = CharsetUtil.UTF_8;
+            String encoding = StringUtil.isBlank(charSet) ? CharsetUtil.UTF_8 : charSet;
+            try (FileOutputStream fos = new FileOutputStream(zipPath + File.separator + fileName + ZIP_FILE);
+                 ZipOutputStream zos = new ZipOutputStream(fos)) {
+                zos.setEncoding(encoding);// 此处修改字节码方式。
+                writeZip(new File(sourcePath), "", zos);
             }
-            zos.setEncoding(charSet);// 此处修改字节码方式。
-            writeZip(new File(sourcePath), "", zos);
         } catch (Exception e) {
             logger.error("zip source:{},zipPath:{},name:{} error", sourcePath, zipPath, fileName, e);
-        } finally {
-            try {
-                if (zos != null) {
-                    zos.close();
-                }
-            } catch (IOException e) {
-                logger.error("close zos error", e);
-            }
         }
     }
 
@@ -124,8 +113,8 @@ public class ZipUtil {
                 int len;
                 while ((len = fis.read(content)) != -1) {
                     zos.write(content, 0, len);
-                    zos.flush();
                 }
+                zos.closeEntry();
 
             } catch (Exception e) {
                 logger.error("write zip file error:{}", file.getAbsolutePath(), e);
@@ -152,28 +141,27 @@ public class ZipUtil {
         if (StringUtil.isBlank(charset)) {
             charset = CharsetUtil.UTF_8;
         }
-        ZipFile file = new ZipFile(zipFilePath, charset);
-        Enumeration<? extends ZipEntry> en = file.getEntries();
-        ZipEntry ze;
         List<File> files = new ArrayList<File>();
-        while (en.hasMoreElements()) {
-            ze = en.nextElement();
-            File f = new File(targetFilePath, ze.getName());
-            // 创建完整路径
-            if (ze.isDirectory()) {
-                f.mkdirs();
-                continue;
-            } else {
+        try (ZipFile file = new ZipFile(zipFilePath, charset)) {
+            Enumeration<? extends ZipEntry> en = file.getEntries();
+            ZipEntry ze;
+            while (en.hasMoreElements()) {
+                ze = en.nextElement();
+                File f = new File(targetFilePath, ze.getName());
+                // 创建完整路径
+                if (ze.isDirectory()) {
+                    f.mkdirs();
+                    continue;
+                }
                 f.getParentFile().mkdirs();
+
+                try (InputStream is = file.getInputStream(ze);
+                     OutputStream os = new BufferedOutputStream(new FileOutputStream(f), CACHE_SIZE)) {
+                    IOUtils.copy(is, os, CACHE_SIZE);
+                }
+                files.add(f);
             }
-            InputStream is = file.getInputStream(ze);
-            OutputStream os = new FileOutputStream(f);
-            IOUtils.copy(is, os, 2048);
-            is.close();
-            os.close();
-            files.add(f);
         }
-        file.close();
         return files;
     }
 }

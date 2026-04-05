@@ -253,9 +253,6 @@ public class WaterMarkImageUtil {
                 if (null != byteArrayOutputStream) {
                     byteArrayOutputStream.close();
                 }
-                if (null != inputStream) {
-                    inputStream.close();
-                }
             } catch (Exception e) {
                 logger.error(" add water mark text close stream error:{}", e.getMessage(), e);
             }
@@ -309,10 +306,10 @@ public class WaterMarkImageUtil {
      * @throws IOException IO异常
      */
     private static void out(InputStream inputStream, String destFilePath) throws IOException {
-        OutputStream os = Files.newOutputStream(Paths.get(destFilePath));
-        Util.copyStream(inputStream, os);
-        os.flush();
-        os.close();
-        inputStream.close();
+        try (InputStream in = inputStream;
+             OutputStream os = Files.newOutputStream(Paths.get(destFilePath))) {
+            Util.copyStream(in, os);
+            os.flush();
+        }
     }
 }

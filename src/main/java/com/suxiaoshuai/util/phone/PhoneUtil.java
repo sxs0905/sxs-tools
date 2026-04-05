@@ -3,6 +3,9 @@ package com.suxiaoshuai.util.phone;
 
 import com.suxiaoshuai.util.string.StringUtil;
 
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 /**
  * 电话号码工具类，用于解析和处理中国大陆地区的电话号码。
  * 支持以下格式：
@@ -58,6 +61,9 @@ public class PhoneUtil {
      */
     public static final String REGEX = "(\\+?86-?)?((" + REGEX_400 + ")|(" + REGEX_MOBILE_PHONE + ")|(" + REGEX_FIXED_PHONE + "))(;(\\+?86-?)?((" + REGEX_400 + ")|(" + REGEX_MOBILE_PHONE + ")|(" + REGEX_FIXED_PHONE + ")))?";
 
+    private static final String REGEX_ALL = REGEX_BEGIN + REGEX + REGEX_END;
+    private static final Pattern REGEX_ALL_PATTERN = Pattern.compile(REGEX_ALL);
+
     /**
      * 解析电话号码字符串，将其转换为标准格式。
      * 支持的格式包括：
@@ -77,9 +83,9 @@ public class PhoneUtil {
         }
 
         StringBuilder sb = new StringBuilder();
-        String regexAll = REGEX_BEGIN + REGEX + REGEX_END;
-        if (RegexUtil.match(tel, regexAll)) {
-            String countryCode = RegexUtil.getRegexPortion(tel, 1, regexAll);
+        Matcher matcher = REGEX_ALL_PATTERN.matcher(tel);
+        if (matcher.matches()) {
+            String countryCode = matcher.group(1);
             if (StringUtil.isNotBlank(countryCode)) {
                 if (countryCode.endsWith("-")) {
                     sb.append(countryCode);
@@ -88,15 +94,15 @@ public class PhoneUtil {
                 }
             }
 
-            String contactInfo = RegexUtil.getRegexPortion(tel, 3, regexAll);
+            String contactInfo = matcher.group(3);
             if (StringUtil.isBlank(contactInfo)) {
-                contactInfo = RegexUtil.getRegexPortion(tel, 10, regexAll);
+                contactInfo = matcher.group(10);
             }
             sb.append(contactInfo);
             if (StringUtil.isBlank(contactInfo)) {
-                String areaCode = RegexUtil.getRegexPortion(tel, 12, regexAll);
-                String fixedPhoneNumber = RegexUtil.getRegexPortion(tel, 18, regexAll);
-                String fixedPhoneSub = RegexUtil.getRegexPortion(tel, 20, regexAll);
+                String areaCode = matcher.group(12);
+                String fixedPhoneNumber = matcher.group(18);
+                String fixedPhoneSub = matcher.group(20);
                 if (StringUtil.isBlank(areaCode)) {
                     sb.append(fixedPhoneNumber);
                 } else {
