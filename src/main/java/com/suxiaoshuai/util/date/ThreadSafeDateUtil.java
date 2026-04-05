@@ -77,7 +77,7 @@ public class ThreadSafeDateUtil {
             }
             return parsed;
         } catch (Exception e) {
-            logger.debug("date :{},pattern:{} parse failed", dateStr, pattern);
+            logger.info("date :{},pattern:{} parse failed", dateStr, pattern);
             return null;
         }
     }
