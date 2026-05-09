@@ -32,6 +32,21 @@ public final class TextWaterMark extends WaterMarkInfo {
     private int letterSpacing = 0;
 
     /**
+     * 是否启用文字描边
+     */
+    private boolean strokeEnabled = false;
+
+    /**
+     * 文字描边颜色
+     */
+    private Color strokeColor = Color.BLACK;
+
+    /**
+     * 文字描边宽度（像素）
+     */
+    private float strokeWidth = 1.0f;
+
+    /**
      * 获取水印文本内容
      *
      * @return 水印文本内容
@@ -108,6 +123,66 @@ public final class TextWaterMark extends WaterMarkInfo {
      */
     public TextWaterMark setLetterSpacing(int letterSpacing) {
         this.letterSpacing = letterSpacing;
+        return this;
+    }
+
+    /**
+     * 是否启用文字描边
+     *
+     * @return true表示启用描边
+     */
+    public boolean isStrokeEnabled() {
+        return strokeEnabled;
+    }
+
+    /**
+     * 设置文字描边开关
+     *
+     * @param strokeEnabled true启用描边
+     * @return 当前对象，支持链式调用
+     */
+    public TextWaterMark setStrokeEnabled(boolean strokeEnabled) {
+        this.strokeEnabled = strokeEnabled;
+        return this;
+    }
+
+    /**
+     * 获取文字描边颜色
+     *
+     * @return 文字描边颜色
+     */
+    public Color getStrokeColor() {
+        return strokeColor;
+    }
+
+    /**
+     * 设置文字描边颜色
+     *
+     * @param strokeColor 文字描边颜色
+     * @return 当前对象，支持链式调用
+     */
+    public TextWaterMark setStrokeColor(Color strokeColor) {
+        this.strokeColor = strokeColor;
+        return this;
+    }
+
+    /**
+     * 获取文字描边宽度（像素）
+     *
+     * @return 描边宽度
+     */
+    public float getStrokeWidth() {
+        return strokeWidth;
+    }
+
+    /**
+     * 设置文字描边宽度（像素）
+     *
+     * @param strokeWidth 描边宽度，最小值为0
+     * @return 当前对象，支持链式调用
+     */
+    public TextWaterMark setStrokeWidth(float strokeWidth) {
+        this.strokeWidth = Math.max(0f, strokeWidth);
         return this;
     }
 }

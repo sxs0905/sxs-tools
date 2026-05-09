@@ -11,8 +11,12 @@ import org.slf4j.LoggerFactory;
 import javax.imageio.ImageIO;
 import javax.swing.*;
 import java.awt.*;
+import java.awt.font.GlyphVector;
+import java.awt.geom.AffineTransform;
 import java.awt.image.BufferedImage;
 import java.io.*;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * 图片水印工具类
@@ -23,10 +27,6 @@ import java.io.*;
 public class WaterMarkImageUtil {
 
     private static final Logger logger = LoggerFactory.getLogger(WaterMarkImageUtil.class);
-
-    private static final java.util.Set<String> IMAGE_EXTENSIONS = java.util.Set.of(
-            ".jpg", ".jpeg", ".png", ".gif", ".bmp", ".webp", ".tiff", ".tif"
-    );
 
     /**
      * 本地文本水印
@@ -59,26 +59,420 @@ public class WaterMarkImageUtil {
      * @param textWaterMark  文字水印信息，可为null
      */
     public static void watermark(File oriFile, File destFile, ImageWaterMark imageWaterMark, TextWaterMark textWaterMark) {
+        watermark(oriFile, destFile, imageWaterMark, textWaterMark, WaterMarkLayoutOptions.tiledDefault());
+    }
+
+    /**
+     * 本地复合水印（图片水印+文字水印），支持排版配置
+     *
+     * @param oriFile         源文件路径
+     * @param destFile        输出文件
+     * @param imageWaterMark  图片水印信息，可为null
+     * @param textWaterMark   文字水印信息，可为null
+     * @param layoutOptions   排版配置，null时使用默认配置
+     */
+    public static void watermark(File oriFile, File destFile, ImageWaterMark imageWaterMark, TextWaterMark textWaterMark,
+                                 WaterMarkLayoutOptions layoutOptions) {
         try {
-            validateImageFile(oriFile);
+            validateExistingImageFile(oriFile);
             if (destFile != null) {
-                validateImageFile(destFile);
+                validateOutputFile(destFile);
             }
             if (imageWaterMark == null && textWaterMark == null) {
                 throw new SxsToolsException("图片水印和文字水印不能同时为空");
             }
 
-            InputStream inputStream = new FileInputStream(oriFile);
-            if (imageWaterMark != null) {
-                inputStream = markImageByIcon(inputStream, imageWaterMark);
+            WaterMarkLayoutOptions options = layoutOptions == null ? new WaterMarkLayoutOptions() : layoutOptions;
+            BufferedImage srcImage = ImageIO.read(oriFile);
+            if (srcImage == null) {
+                throw new SxsToolsException("源图片读取失败: " + oriFile.getAbsolutePath());
             }
-            if (textWaterMark != null) {
-                inputStream = markImageByText(inputStream, textWaterMark);
+            BufferedImage canvas = new BufferedImage(srcImage.getWidth(), srcImage.getHeight(), BufferedImage.TYPE_INT_ARGB);
+            Graphics2D g = canvas.createGraphics();
+            try {
+                g.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
+                g.drawImage(srcImage, 0, 0, null);
+                renderCompositeWatermark(g, canvas.getWidth(), canvas.getHeight(), imageWaterMark, textWaterMark, options);
+            } finally {
+                g.dispose();
             }
+            InputStream inputStream = toInputStream(canvas);
             out(oriFile, inputStream, destFile, "wm");
         } catch (Exception e) {
             logger.error("markImageByMulti error:{}", e.getMessage(), e);
         }
+    }
+
+    /**
+     * 流式复合水印（图片水印+文字水印），适用于非本地文件场景
+     * 调用方负责管理输入输出流生命周期
+     *
+     * @param oriInputStream  源图片输入流
+     * @param destOutputStream 目标图片输出流
+     * @param imageWaterMark  图片水印信息，可为null
+     * @param textWaterMark   文字水印信息，可为null
+     */
+    public static void watermark(InputStream oriInputStream, OutputStream destOutputStream,
+                                 ImageWaterMark imageWaterMark, TextWaterMark textWaterMark) {
+        watermark(oriInputStream, destOutputStream, imageWaterMark, textWaterMark, WaterMarkLayoutOptions.tiledDefault());
+    }
+
+    /**
+     * 流式复合水印（图片水印+文字水印），支持排版配置
+     * 调用方负责管理输入输出流生命周期
+     *
+     * @param oriInputStream   源图片输入流
+     * @param destOutputStream 目标图片输出流
+     * @param imageWaterMark   图片水印信息，可为null
+     * @param textWaterMark    文字水印信息，可为null
+     * @param layoutOptions    排版配置，null时使用默认配置
+     */
+    public static void watermark(InputStream oriInputStream, OutputStream destOutputStream,
+                                 ImageWaterMark imageWaterMark, TextWaterMark textWaterMark,
+                                 WaterMarkLayoutOptions layoutOptions) {
+        try {
+            if (oriInputStream == null) {
+                throw new SxsToolsException("源图片输入流不能为空");
+            }
+            if (destOutputStream == null) {
+                throw new SxsToolsException("目标图片输出流不能为空");
+            }
+            if (imageWaterMark == null && textWaterMark == null) {
+                throw new SxsToolsException("图片水印和文字水印不能同时为空");
+            }
+
+            WaterMarkLayoutOptions options = layoutOptions == null ? new WaterMarkLayoutOptions() : layoutOptions;
+            BufferedImage srcImage = readImageFromInputStream(oriInputStream, "源图片");
+            BufferedImage canvas = new BufferedImage(srcImage.getWidth(), srcImage.getHeight(), BufferedImage.TYPE_INT_ARGB);
+            Graphics2D g = canvas.createGraphics();
+            try {
+                g.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
+                g.drawImage(srcImage, 0, 0, null);
+                renderCompositeWatermark(g, canvas.getWidth(), canvas.getHeight(), imageWaterMark, textWaterMark, options);
+            } finally {
+                g.dispose();
+            }
+
+            try (InputStream resultStream = toInputStream(canvas)) {
+                copyToOutputStream(resultStream, destOutputStream);
+            }
+            destOutputStream.flush();
+        } catch (Exception e) {
+            logger.error("markImageByMultiStream error:{}", e.getMessage(), e);
+            throw new SxsToolsException(e);
+        }
+    }
+
+    /**
+     * 字节数组复合水印（图片水印+文字水印），适用于MultipartFile/网络下载等非本地文件场景
+     *
+     * @param oriImageBytes  源图片字节数组
+     * @param imageWaterMark 图片水印信息，可为null
+     * @param textWaterMark  文字水印信息，可为null
+     * @return 处理后的图片字节数组
+     */
+    public static byte[] watermark(byte[] oriImageBytes, ImageWaterMark imageWaterMark, TextWaterMark textWaterMark) {
+        return watermark(oriImageBytes, imageWaterMark, textWaterMark, WaterMarkLayoutOptions.tiledDefault());
+    }
+
+    /**
+     * 字节数组复合水印（图片水印+文字水印），支持排版配置
+     *
+     * @param oriImageBytes  源图片字节数组
+     * @param imageWaterMark 图片水印信息，可为null
+     * @param textWaterMark  文字水印信息，可为null
+     * @param layoutOptions  排版配置，null时使用默认配置
+     * @return 处理后的图片字节数组
+     */
+    public static byte[] watermark(byte[] oriImageBytes, ImageWaterMark imageWaterMark, TextWaterMark textWaterMark,
+                                   WaterMarkLayoutOptions layoutOptions) {
+        if (oriImageBytes == null || oriImageBytes.length == 0) {
+            throw new SxsToolsException("源图片字节为空");
+        }
+        try (InputStream oriInputStream = new ByteArrayInputStream(oriImageBytes);
+             ByteArrayOutputStream destOutputStream = new ByteArrayOutputStream()) {
+            watermark(oriInputStream, destOutputStream, imageWaterMark, textWaterMark, layoutOptions);
+            return destOutputStream.toByteArray();
+        } catch (IOException e) {
+            throw new SxsToolsException("字节数组水印处理失败", e);
+        }
+    }
+
+    /**
+     * 便捷方法：传入源图字节和水印图字节，输出处理后的图片字节
+     *
+     * @param oriImageBytes       源图片字节数组
+     * @param watermarkImageBytes 水印图片字节数组，可为null
+     * @param textWaterMark       文字水印信息，可为null
+     * @param layoutOptions       排版配置，null时使用默认配置
+     * @return 处理后的图片字节数组
+     */
+    public static byte[] watermark(byte[] oriImageBytes, byte[] watermarkImageBytes,
+                                   TextWaterMark textWaterMark, WaterMarkLayoutOptions layoutOptions) {
+        ImageWaterMark imageWaterMark = null;
+        if (watermarkImageBytes != null && watermarkImageBytes.length > 0) {
+            imageWaterMark = new ImageWaterMark().setImageBytes(watermarkImageBytes);
+        }
+        return watermark(oriImageBytes, imageWaterMark, textWaterMark, layoutOptions);
+    }
+
+    private static void renderCompositeWatermark(Graphics2D g, int canvasWidth, int canvasHeight,
+                                                 ImageWaterMark imageWaterMark, TextWaterMark textWaterMark,
+                                                 WaterMarkLayoutOptions options) {
+        List<RenderedElement> elements = buildElements(imageWaterMark, textWaterMark, options);
+        if (elements.isEmpty()) {
+            throw new SxsToolsException("没有可绘制的水印元素");
+        }
+
+        GroupLayout groupLayout = calculateGroupLayout(elements, options);
+        if (options.isTiled()) {
+            int stepX = Math.max(1, groupLayout.width + resolveTileOffsetX(imageWaterMark, textWaterMark));
+            int stepY = Math.max(1, groupLayout.height + resolveTileOffsetY(imageWaterMark, textWaterMark));
+            for (int y = -groupLayout.height / 2; y < canvasHeight + groupLayout.height; y += stepY) {
+                for (int x = -groupLayout.width / 2; x < canvasWidth + groupLayout.width; x += stepX) {
+                    drawGroup(g, elements, groupLayout, x, y);
+                }
+            }
+            return;
+        }
+
+        Point origin = calculateOrigin(canvasWidth, canvasHeight, groupLayout.width, groupLayout.height, options);
+        drawGroup(g, elements, groupLayout, origin.x, origin.y);
+    }
+
+    private static List<RenderedElement> buildElements(ImageWaterMark imageWaterMark, TextWaterMark textWaterMark,
+                                                       WaterMarkLayoutOptions options) {
+        List<RenderedElement> elements = new ArrayList<>();
+        boolean imageFirst = options.getOrder() == WaterMarkLayoutOptions.Order.IMAGE_FIRST;
+        if (imageFirst) {
+            addImageElement(elements, imageWaterMark);
+            addTextElement(elements, textWaterMark);
+        } else {
+            addTextElement(elements, textWaterMark);
+            addImageElement(elements, imageWaterMark);
+        }
+        return elements;
+    }
+
+    private static void addImageElement(List<RenderedElement> elements, ImageWaterMark imageWaterMark) {
+        if (imageWaterMark == null) {
+            return;
+        }
+        BufferedImage image = loadAndScaleImageWatermark(imageWaterMark);
+        if (image == null) {
+            return;
+        }
+        int degree = imageWaterMark.getDegree() == null ? 0 : imageWaterMark.getDegree();
+        elements.add(new RenderedElement(image, imageWaterMark.getComposite(), degree));
+    }
+
+    private static void addTextElement(List<RenderedElement> elements, TextWaterMark textWaterMark) {
+        if (textWaterMark == null) {
+            return;
+        }
+        String logoText = addTextSpace(textWaterMark.getText(), textWaterMark.getLetterSpacing());
+        if (StringUtil.isBlank(logoText)) {
+            return;
+        }
+        Font font = textWaterMark.getFont();
+        FontMetrics fm = getFontMetrics(font);
+        int textWidth = Math.max(1, fm.stringWidth(logoText));
+        int textHeight = Math.max(1, fm.getHeight());
+        BufferedImage textImage = new BufferedImage(textWidth, textHeight, BufferedImage.TYPE_INT_ARGB);
+        Graphics2D tg = textImage.createGraphics();
+        try {
+            tg.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
+            tg.setFont(font);
+            // 文字描边：对应界面中的“文字描边”开关、颜色和宽度
+            GlyphVector glyphVector = font.createGlyphVector(tg.getFontRenderContext(), logoText);
+            Shape textShape = glyphVector.getOutline(0, fm.getAscent());
+            if (textWaterMark.isStrokeEnabled() && textWaterMark.getStrokeWidth() > 0f) {
+                tg.setStroke(new BasicStroke(textWaterMark.getStrokeWidth(), BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
+                tg.setColor(textWaterMark.getStrokeColor());
+                tg.draw(textShape);
+            }
+            tg.setColor(textWaterMark.getColor());
+            tg.fill(textShape);
+        } finally {
+            tg.dispose();
+        }
+        int degree = textWaterMark.getDegree() == null ? 0 : textWaterMark.getDegree();
+        elements.add(new RenderedElement(textImage, textWaterMark.getComposite(), degree));
+    }
+
+    private static BufferedImage loadAndScaleImageWatermark(ImageWaterMark imageWaterMark) {
+        Image watermarkImg = null;
+        byte[] imageBytes = imageWaterMark.getImageBytes();
+        if (imageBytes != null && imageBytes.length > 0) {
+            watermarkImg = readWatermarkImage(imageBytes);
+        }
+        File watermarkFile = imageWaterMark.getImageFile();
+        if (watermarkImg == null && watermarkFile != null) {
+            watermarkImg = readWatermarkImage(watermarkFile);
+        }
+        if (watermarkImg == null) {
+            ImageIcon imgIcon = imageWaterMark.getImageIcon();
+            if (imgIcon != null) {
+                watermarkImg = ensureImageLoaded(imgIcon);
+            }
+        }
+        if (watermarkImg == null) {
+            return null;
+        }
+
+        int originalWidth = watermarkImg.getWidth(null);
+        int originalHeight = watermarkImg.getHeight(null);
+        int finalWidth = originalWidth;
+        int finalHeight = originalHeight;
+        if (imageWaterMark.getScaleMode() == ScaleMode.FIXED_WIDTH && imageWaterMark.getWatermarkWidth() > 0) {
+            finalWidth = imageWaterMark.getWatermarkWidth();
+            finalHeight = (int) ((double) finalWidth / originalWidth * originalHeight);
+        } else if (imageWaterMark.getScaleMode() == ScaleMode.FIXED_HEIGHT && imageWaterMark.getWatermarkHeight() > 0) {
+            finalHeight = imageWaterMark.getWatermarkHeight();
+            finalWidth = (int) ((double) finalHeight / originalHeight * originalWidth);
+        } else if (imageWaterMark.getScaleMode() == ScaleMode.CUSTOMER
+                && imageWaterMark.getWatermarkWidth() > 0 && imageWaterMark.getWatermarkHeight() > 0) {
+            finalWidth = imageWaterMark.getWatermarkWidth();
+            finalHeight = imageWaterMark.getWatermarkHeight();
+        }
+
+        if (finalWidth <= 0 || finalHeight <= 0) {
+            return null;
+        }
+        BufferedImage scaled = new BufferedImage(finalWidth, finalHeight, BufferedImage.TYPE_INT_ARGB);
+        Graphics2D ig = scaled.createGraphics();
+        try {
+            ig.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BICUBIC);
+            ig.drawImage(watermarkImg, 0, 0, finalWidth, finalHeight, null);
+        } finally {
+            ig.dispose();
+        }
+        return scaled;
+    }
+
+    private static GroupLayout calculateGroupLayout(List<RenderedElement> elements, WaterMarkLayoutOptions options) {
+        int spacing = Math.max(0, options.getElementSpacing());
+        int groupWidth = 0;
+        int groupHeight = 0;
+        if (options.getDirection() == WaterMarkLayoutOptions.Direction.HORIZONTAL) {
+            for (int i = 0; i < elements.size(); i++) {
+                RenderedElement element = elements.get(i);
+                groupWidth += element.width;
+                if (i > 0) {
+                    groupWidth += spacing;
+                }
+                groupHeight = Math.max(groupHeight, element.height);
+            }
+        } else {
+            for (int i = 0; i < elements.size(); i++) {
+                RenderedElement element = elements.get(i);
+                groupHeight += element.height;
+                if (i > 0) {
+                    groupHeight += spacing;
+                }
+                groupWidth = Math.max(groupWidth, element.width);
+            }
+        }
+        return new GroupLayout(groupWidth, groupHeight, spacing, options.getDirection(), options.getAlign());
+    }
+
+    private static void drawGroup(Graphics2D g, List<RenderedElement> elements, GroupLayout layout, int originX, int originY) {
+        int cursorX = 0;
+        int cursorY = 0;
+        int spacing = Math.max(0, layout.spacing);
+        for (RenderedElement element : elements) {
+            int x = originX;
+            int y = originY;
+            if (layout.direction == WaterMarkLayoutOptions.Direction.HORIZONTAL) {
+                x += cursorX;
+                y += alignOffset(layout.align, layout.height, element.height);
+                cursorX += element.width + spacing;
+            } else {
+                x += alignOffset(layout.align, layout.width, element.width);
+                y += cursorY;
+                cursorY += element.height + spacing;
+            }
+            drawElement(g, element, x, y);
+        }
+    }
+
+    private static void drawElement(Graphics2D g, RenderedElement element, int x, int y) {
+        AffineTransform oldTransform = g.getTransform();
+        Composite oldComposite = g.getComposite();
+        try {
+            if (element.composite != null) {
+                g.setComposite(element.composite);
+            }
+            if (element.degree != 0) {
+                g.rotate(Math.toRadians(element.degree), x + element.width / 2.0, y + element.height / 2.0);
+            }
+            g.drawImage(element.image, x, y, null);
+        } finally {
+            g.setComposite(oldComposite);
+            g.setTransform(oldTransform);
+        }
+    }
+
+    private static int alignOffset(WaterMarkLayoutOptions.Align align, int container, int content) {
+        if (align == WaterMarkLayoutOptions.Align.START) {
+            return 0;
+        }
+        if (align == WaterMarkLayoutOptions.Align.END) {
+            return container - content;
+        }
+        return (container - content) / 2;
+    }
+
+    private static Point calculateOrigin(int canvasWidth, int canvasHeight, int groupWidth, int groupHeight,
+                                         WaterMarkLayoutOptions options) {
+        int marginX = Math.max(0, options.getMarginX());
+        int marginY = Math.max(0, options.getMarginY());
+        int x;
+        int y;
+        switch (options.getPosition()) {
+            case TOP_LEFT:
+                x = marginX;
+                y = marginY;
+                break;
+            case TOP_RIGHT:
+                x = canvasWidth - groupWidth - marginX;
+                y = marginY;
+                break;
+            case BOTTOM_LEFT:
+                x = marginX;
+                y = canvasHeight - groupHeight - marginY;
+                break;
+            case CENTER:
+                x = (canvasWidth - groupWidth) / 2;
+                y = (canvasHeight - groupHeight) / 2;
+                break;
+            case BOTTOM_RIGHT:
+            default:
+                x = canvasWidth - groupWidth - marginX;
+                y = canvasHeight - groupHeight - marginY;
+                break;
+        }
+        return new Point(Math.max(0, x), Math.max(0, y));
+    }
+
+    private static int resolveTileOffsetX(ImageWaterMark imageWaterMark, TextWaterMark textWaterMark) {
+        int imageOffset = imageWaterMark == null ? 0 : imageWaterMark.getWordWidthOffset();
+        int textOffset = textWaterMark == null ? 0 : textWaterMark.getWordWidthOffset();
+        int offset = Math.max(imageOffset, textOffset);
+        return Math.max(50, offset);
+    }
+
+    private static int resolveTileOffsetY(ImageWaterMark imageWaterMark, TextWaterMark textWaterMark) {
+        int imageOffset = imageWaterMark == null ? 0 : imageWaterMark.getWordHeightOffset();
+        int textOffset = textWaterMark == null ? 0 : textWaterMark.getWordHeightOffset();
+        int offset = Math.max(imageOffset, textOffset);
+        return Math.max(120, offset);
+    }
+
+    private static InputStream toInputStream(BufferedImage image) throws IOException {
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        ImageIO.write(image, "png", baos);
+        return new ByteArrayInputStream(baos.toByteArray());
     }
 
     /**
@@ -375,7 +769,7 @@ public class WaterMarkImageUtil {
             throw new SxsToolsException("水印图片未正确加载，请检查图片路径或图片内容，description=" + description
                     + ", detectedType=" + detectedType
                     + ", width=" + image.getWidth(null) + ", height=" + image.getHeight(null)
-                    + "。可尝试改为setImageFile传入图片文件");
+                    + "。可尝试改为setImageInputStream/setImageBytes/setImageFile");
         }
         return image;
     }
@@ -387,25 +781,113 @@ public class WaterMarkImageUtil {
         if (imageFile == null || !imageFile.exists() || !imageFile.isFile()) {
             throw new SxsToolsException("水印图片文件不存在: " + (imageFile == null ? "null" : imageFile.getAbsolutePath()));
         }
+        try (InputStream in = new FileInputStream(imageFile)) {
+            return readWatermarkImage(in.readAllBytes());
+        } catch (IOException e) {
+            throw new SxsToolsException("水印图片读取失败: " + imageFile.getAbsolutePath(), e);
+        }
+    }
+
+    private static BufferedImage readWatermarkImage(byte[] imageBytes) {
+        return decodeImageBytes(imageBytes, "水印图片");
+    }
+
+    private static BufferedImage readImageFromInputStream(InputStream inputStream, String imageName) throws IOException {
+        byte[] bytes = inputStream.readAllBytes();
+        return decodeImageBytes(bytes, imageName);
+    }
+
+    private static BufferedImage decodeImageBytes(byte[] imageBytes, String imageName) {
+        if (imageBytes == null || imageBytes.length == 0) {
+            throw new SxsToolsException(imageName + "字节为空");
+        }
+
         try {
-            BufferedImage bufferedImage = ImageIO.read(imageFile);
+            BufferedImage bufferedImage = ImageIO.read(new ByteArrayInputStream(imageBytes));
             if (bufferedImage != null && bufferedImage.getWidth() > 0 && bufferedImage.getHeight() > 0) {
                 return bufferedImage;
             }
         } catch (IOException e) {
-            logger.warn("read watermark image by ImageIO failed: {}", imageFile.getAbsolutePath(), e);
+            logger.warn("read watermark image by ImageIO failed", e);
         }
 
         try {
-            BufferedImage bufferedImage = Imaging.getBufferedImage(imageFile);
+            BufferedImage bufferedImage = Imaging.getBufferedImage(imageBytes);
             if (bufferedImage != null && bufferedImage.getWidth() > 0 && bufferedImage.getHeight() > 0) {
                 return bufferedImage;
             }
         } catch (IOException e) {
-            logger.warn("read watermark image by commons-imaging failed: {}", imageFile.getAbsolutePath(), e);
+            logger.warn("read watermark image by commons-imaging failed", e);
         }
 
-        throw new SxsToolsException("水印图片读取失败: " + imageFile.getAbsolutePath() + ", detectedType=" + detectImageType(imageFile));
+        // 兜底：部分格式在ImageIO/Imaging下可能失败，尝试Awt图像加载链路（按字节）
+        BufferedImage awtLoaded = loadImageByAwt(imageBytes);
+        if (awtLoaded != null) {
+            return awtLoaded;
+        }
+
+        throw new SxsToolsException(imageName + "读取失败，detectedType=" + detectImageType(imageBytes));
+    }
+
+    private static void copyToOutputStream(InputStream inputStream, OutputStream outputStream) throws IOException {
+        byte[] buffer = new byte[8192];
+        int len;
+        while ((len = inputStream.read(buffer)) != -1) {
+            outputStream.write(buffer, 0, len);
+        }
+    }
+
+    private static BufferedImage loadImageByAwt(File imageFile) {
+        ImageIcon icon = new ImageIcon(imageFile.getAbsolutePath());
+        Image image = icon.getImage();
+        if (image == null) {
+            return null;
+        }
+        MediaTracker tracker = new MediaTracker(new Canvas());
+        tracker.addImage(image, 0);
+        try {
+            tracker.waitForID(0);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            return null;
+        }
+        if (tracker.isErrorID(0) || image.getWidth(null) <= 0 || image.getHeight(null) <= 0) {
+            return null;
+        }
+        BufferedImage bufferedImage = new BufferedImage(image.getWidth(null), image.getHeight(null), BufferedImage.TYPE_INT_ARGB);
+        Graphics2D g2d = bufferedImage.createGraphics();
+        try {
+            g2d.drawImage(image, 0, 0, null);
+        } finally {
+            g2d.dispose();
+        }
+        return bufferedImage;
+    }
+
+    private static BufferedImage loadImageByAwt(byte[] imageBytes) {
+        Image image = Toolkit.getDefaultToolkit().createImage(imageBytes);
+        if (image == null) {
+            return null;
+        }
+        MediaTracker tracker = new MediaTracker(new Canvas());
+        tracker.addImage(image, 0);
+        try {
+            tracker.waitForID(0);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            return null;
+        }
+        if (tracker.isErrorID(0) || image.getWidth(null) <= 0 || image.getHeight(null) <= 0) {
+            return null;
+        }
+        BufferedImage bufferedImage = new BufferedImage(image.getWidth(null), image.getHeight(null), BufferedImage.TYPE_INT_ARGB);
+        Graphics2D g2d = bufferedImage.createGraphics();
+        try {
+            g2d.drawImage(image, 0, 0, null);
+        } finally {
+            g2d.dispose();
+        }
+        return bufferedImage;
     }
 
     /**
@@ -438,6 +920,32 @@ public class WaterMarkImageUtil {
             }
         } catch (IOException e) {
             logger.warn("detect image type failed: {}", file.getAbsolutePath(), e);
+        }
+        return "unknown";
+    }
+
+    private static String detectImageType(byte[] bytes) {
+        if (bytes == null || bytes.length < 4) {
+            return "unknown";
+        }
+        if ((bytes[0] & 0xFF) == 0x89 && bytes[1] == 0x50 && bytes[2] == 0x4E && bytes[3] == 0x47) {
+            return "png";
+        }
+        if ((bytes[0] & 0xFF) == 0xFF && (bytes[1] & 0xFF) == 0xD8) {
+            return "jpeg";
+        }
+        if (bytes[0] == 'G' && bytes[1] == 'I' && bytes[2] == 'F') {
+            return "gif";
+        }
+        if (bytes[0] == 'B' && bytes[1] == 'M') {
+            return "bmp";
+        }
+        if (bytes[0] == 0x00 && bytes[1] == 0x00 && bytes[2] == 0x01 && bytes[3] == 0x00) {
+            return "ico";
+        }
+        if (bytes.length >= 12 && bytes[0] == 'R' && bytes[1] == 'I' && bytes[2] == 'F' && bytes[3] == 'F'
+                && bytes[8] == 'W' && bytes[9] == 'E' && bytes[10] == 'B' && bytes[11] == 'P') {
+            return "webp";
         }
         return "unknown";
     }
@@ -480,14 +988,87 @@ public class WaterMarkImageUtil {
      * @param file 待校验的文件
      * @throws SxsToolsException 如果文件不存在、不是文件或不是图片格式
      */
-    private static void validateImageFile(File file) {
+    private static void validateExistingImageFile(File file) {
         if (file == null) {
             throw new SxsToolsException("文件不能为空");
         }
-        String fileName = file.getName().toLowerCase(java.util.Locale.ROOT);
-        boolean isImage = IMAGE_EXTENSIONS.stream().anyMatch(fileName::endsWith);
-        if (!isImage) {
-            throw new SxsToolsException("文件不是图片格式: " + file.getAbsolutePath());
+        if (!file.exists() || !file.isFile()) {
+            throw new SxsToolsException("文件不存在或不是文件: " + file.getAbsolutePath());
+        }
+        if (!isImageByContent(file)) {
+            throw new SxsToolsException("文件不是可识别图片: " + file.getAbsolutePath());
+        }
+    }
+
+    private static void validateOutputFile(File file) {
+        if (file == null) {
+            return;
+        }
+        File parent = file.getAbsoluteFile().getParentFile();
+        if (parent != null && !parent.exists()) {
+            throw new SxsToolsException("输出目录不存在: " + parent.getAbsolutePath());
+        }
+        if (file.exists() && file.isDirectory()) {
+            throw new SxsToolsException("输出路径不能是目录: " + file.getAbsolutePath());
+        }
+    }
+
+    private static boolean isImageByContent(File file) {
+        try {
+            BufferedImage image = ImageIO.read(file);
+            if (image != null && image.getWidth() > 0 && image.getHeight() > 0) {
+                return true;
+            }
+        } catch (IOException ignored) {
+        }
+
+        try {
+            BufferedImage image = Imaging.getBufferedImage(file);
+            if (image != null && image.getWidth() > 0 && image.getHeight() > 0) {
+                return true;
+            }
+        } catch (IOException ignored) {
+        }
+
+        BufferedImage awtLoaded = loadImageByAwt(file);
+        if (awtLoaded != null) {
+            return true;
+        }
+
+        return !"unknown".equals(detectImageType(file));
+    }
+
+    private static final class RenderedElement {
+        private final BufferedImage image;
+        private final Composite composite;
+        private final int degree;
+        private final int width;
+        private final int height;
+
+        private RenderedElement(BufferedImage image, Composite composite, int degree) {
+            this.image = image;
+            this.composite = composite;
+            this.degree = degree;
+            this.width = image.getWidth();
+            this.height = image.getHeight();
+        }
+    }
+
+    private static final class GroupLayout {
+        private final int width;
+        private final int height;
+        private final int spacing;
+        private final WaterMarkLayoutOptions.Direction direction;
+        private final WaterMarkLayoutOptions.Align align;
+
+        private GroupLayout(int width, int height, int spacing,
+                            WaterMarkLayoutOptions.Direction direction,
+                            WaterMarkLayoutOptions.Align align) {
+            this.width = width;
+            this.height = height;
+            this.spacing = spacing;
+            this.direction = direction;
+            this.align = align;
         }
     }
 }
