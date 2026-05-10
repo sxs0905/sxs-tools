@@ -1,6 +1,5 @@
 package com.suxiaoshuai.util.http;
 
-import com.suxiaoshuai.util.image.WaterMarkImageUtil;
 import com.suxiaoshuai.util.string.StringUtil;
 import okhttp3.*;
 import org.slf4j.Logger;
